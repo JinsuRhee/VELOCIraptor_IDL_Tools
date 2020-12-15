@@ -1,0 +1,82 @@
+##-----
+## Path Settings
+##	* Path for the directories
+##		dir_raw	= where/is/ramses/rawdata/files
+##		dir_catalog = where/is/output/files/of/VR
+##		dir_save = where/to/save/the/final/hdf5/files
+##
+##		dir_catalog_pre = prefix for the catalog directories (default = snap_)
+##		dir_catalog_suf = suffix for the catalog directories (default = )
+##	* You can simply make alias for the path for the directories by choosing the simul-name
+##-----
+
+#dir_raw=''
+#dir_catalog=''
+#dir_save=''
+
+dir_catalog_pre	= 'snap_'
+dir_catalog_suf = ''
+
+simname	= 'NH'
+cname	= 'NH'
+
+#simname	= 'YZiCS2'
+#cname		= 'l10006'
+#cname		= 'c10006'
+#cname		= 'c03770'
+
+#simname= 'YZiCS'
+#cname	= '49096'
+
+##-----
+## General Settings
+##	num_thread	= how many cores you want to use
+##-----
+num_thread	= 20L
+
+##-----
+## Data Settings
+##	column_list = ['list', 'of', 'data', 'that', 'you', 'want to', 'extract from the catalog', 'or read in the .hdf5']
+##	flux_list = ['list', 'of', 'flux']
+##		! currently, only SDSS bands are available
+##-----
+column_list	= ['ID', 'ID_mbp', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_200crit', 'R_size', 'R_200crit', 'R_HalfMass', 'Rvir', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'npart']
+flux_list       = ['u', 'g', 'r', 'i', 'z']
+
+##-----
+## Procedure Settings
+##	* 1 - on // others - off
+##			read the catalog files, match them with the raw data, measure some properties, and save the final data
+##-----
+	P_VRrun_snap = [780L, 780L, 1L]		;;-- Snapshot Range, Interval
+	#P_VRrun_step = ['rv_raw', 'rv_id', 'rv_tree', 'rv_match', 'rv_gprop', 'rv_save']
+	P_VRrun_step = ['rv_tree', 'rv_match', 'rv_gprop', 'rv_save']
+	#P_VRrun_skip = ['skip_tree', 'skip_id', 'skip_match', 'skip_gprop']
+	P_VRrun_skip = ['skip_tree']
+	#P_VRrun_skip = [' ']
+	P_VRrun_horg = 'g'
+	P_VRrun_SFR_t= [0.1, 0.1, 1.0, 1.0]	;;-- SFR Measurement Setting --
+	P_VRrun_SFR_r= [-1.0, 1.0, -1.0, 1.0]	;; _t = time interval in Gyr
+#						;; _r = aperture cut (negative value indicates total)
+	P_VRrun_mag_r= [-1.0, 1.0]		;;-- Magnitude Measurement SEtting --
+#						;; _r = aperture cut (negative value indicates total)
+
+##-----
+## LIST OF CALL FUNCTIONS
+##-----
+##	get_gyr.pro
+##		= get_gyr(conformal time, info.txt dir, lib dir, num_thread, n_snap)
+##		> Conformal time to Gyr and Sfactor
+##
+##	get_flux.pro
+##		= get_flux(mass (solar), metal, gyr, 
+##
+##	f_getevol.pro
+##
+##	f_getfinaldes.pro
+##
+##	f_rdamr.pro
+##
+##	f_rdgal.pro
+##
+##	f_rdptcl.pro

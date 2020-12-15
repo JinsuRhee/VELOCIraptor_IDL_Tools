@@ -1,0 +1,15 @@
+Original files can be downloaded at "bruzual.org" or "http://www.bruzual.org/~gbruzual/bc03"
+All tables are re-arranged by Jinsu for them to have the same format with the original BC03 SSP data
+
+1) lambda.dat
+	wavelength array [A]
+
+2) age_yy_bc.dat
+	age array [Gyr]
+
+3) bc03_chab_X.XXXX
+	SSP flux with metalicity of X.XXXX
+	The array contains the total number of components of (age X wavelength)
+	Unit is the flux density normalized by L_sun of the total mass of 1 M_sun
+		[(F_lambda / Lsun) * A^-1 * Msun^-1)]
+	IMF as Chabrier is used
