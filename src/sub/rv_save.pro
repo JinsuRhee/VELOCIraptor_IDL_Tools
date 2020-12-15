@@ -10,8 +10,10 @@ Pro rv_save, output, dir_save=dir_save, horg=horg, num_thread=num_thread, $
 	;; Make a Directory?
 	;;----
 
-	if horg eq 'g' then fname = dir_save + 'VR_Galaxy/' + 'snap_' + string(n_snap,format='(I3.3)')
-	if horg eq 'h' then fname = dir_save + 'VR_Halo/' + 'snap_' + string(n_snap,format='(I3.3)')
+	;if horg eq 'g' then fname = dir_save + 'VR_Galaxy/' + 'snap_' + string(n_snap,format='(I3.3)')
+	;if horg eq 'h' then fname = dir_save + 'VR_Halo/' + 'snap_' + string(n_snap,format='(I3.3)')
+
+	fname	= dir_save + 'snap_' + STRING(n_snap,format='(I3.3)')
 
 	file_exist	= file_search(fname)
 	if strlen(file_exist) le 5L then spawn, 'mkdir ' + fname
