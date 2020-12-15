@@ -23,7 +23,7 @@ FUNCTION get_gyr, t_conf, $
 	ENDIF ELSE IF simname EQ 'YZiCS2' THEN BEGIN
 		RESTORE, dir_lib + 'sub_ftn/conformal_table_YZiCS2.sav'
 		RESTORE, dir_lib + 'sub_ftn/LBT_table_YZiCS2.sav'
-	ENDIF ELSE
+	ENDIF ELSE BEGIN
 		IF ~KEYWORD_SET(oM) OR ~KEYWORD_SET(oL) OR ~KEYWORD_SET(H0) THEN BEGIN
 			PRINT, 'No available cosmology chosen:'
 			PRINT, '	Set keywords, oM=, oL=, H0='
