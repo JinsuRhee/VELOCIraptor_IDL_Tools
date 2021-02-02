@@ -1,7 +1,4 @@
 FUNCTION rv_ReadTree, settings, dir_data, data, n_snap, run=run
-	;output, output2, $
-	;column_list=column_list, horg=horg, $
-	;dir_snap=dir_snap, silent=silent, n_snap=n_snap, skip=skip
 ;;-----
 ;; Check procedure set
 ;;-----
@@ -111,6 +108,8 @@ IF run EQ 2L THEN BEGIN
 		plist_merit(i,0:N_ELEMENTS(prog_id)-1L)	= prog_mr
 	ENDFOR
 
-	RETURN, PTR_NEW({progs:plist_mass, progs_merit:plist_merit},/no_copy)
+	output	= {progs:plist_mass, progs_merit:plist_merit}
+	SAVE, filename=dir_data + 'rv_tree.sav', output
+	RETURN, PTR_NEW(output,/no_copy)
 ENDIF
 END

@@ -30,13 +30,15 @@ PRO read_vraptor, settings, n_snap, $
 	;;-----
 	data	= {$
 		rv_raw		: PTR_NEW(1), $
-		rv_tree		: PTR_NEW(1)}
+		rv_tree		: PTR_NEW(1), $
+		rv_id		: PTR_NEW(1)}
 
 	;;-----
 	;; Compile all procedures first
 	;;-----
 	void	= rv_RawCatalog(settings, ' ', run=0L)
 	void	= rv_ReadTree(settings, ' ', ' ', run=0L)
+	void	= rv_ReadID(settings, ' ', ' ', run=0L)
 
 	;;-----
 	;; Path Settings
@@ -59,9 +61,33 @@ PRO read_vraptor, settings, n_snap, $
 	;; Read Tree
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
-	data.rv_tree	= rv_ReadTree(settings, dir_data, data, n_snap, run=settings.P_VRrun_step(1))
+	data.rv_tree	= rv_ReadTree(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(1))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
+	;;-----
+	;; Read Particle IDs
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Particle IDs ...', /bef
+	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(2))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+
+	STOP
+
+	if strlen(file_search(dir_snap + 'rv_id.sav')) lt 5L or KEYWORD_SET(rv_id) then begin
+		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
+
+		rv_readid, output2, dir_snap=dir_snap, horg=horg, skip=KEYWORD_SET(skip_id)
+
+		save, filename=dir_snap + 'rv_id.sav', output2
+	endif else begin
+	        restore, dir_snap + 'rv_id.sav'
+	endelse
+	output	= rv_makestr(output2, output=output)
+	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
+	if KEYWORD_SET(verbose) then PRINT, ' '
+	if KEYWORD_SET(verbose) then PRINT, ' '
+	if KEYWORD_SET(verbose) then toc, /verbose
 	STOP
 
 ;+)
@@ -101,31 +127,6 @@ PRO read_vraptor, settings, n_snap, $
 
 
 
-	;;-----
-	;; Read Progenitors
-	;;-----
-
-	;if KEYWORD_SET(verbose) then tic
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Reading Tree		     '
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
-	;if strlen(file_search(dir_snap + 'rv_tree.sav')) lt 5L or KEYWORD_SET(rv_tree) then begin
-	;	if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-	;	rv_readtree, output, output2, $
-	;		dir_snap=dir_snap, skip=KEYWORD_SET(skip_tree), n_snap=n_snap, horg=horg, $
-	;		column_list=column_list
-
-	;	save, filename=dir_snap + 'rv_tree.sav', output2
-	;endif else begin
-	;        restore, dir_snap + 'rv_tree.sav'
-	;endelse
-	;output	= rv_makestr(output2, output=output)
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then toc, /verbose
 
 	;;-----
 	;; Apply the mass limit
@@ -182,7 +183,7 @@ PRO read_vraptor, settings, n_snap, $
 	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
 	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Particle Matching         '
 	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
+	print, 'negative id set'
 	if strlen(file_search(dir_snap + 'rv_ptcl.sav')) lt 5L or KEYWORD_SET(rv_match) then begin
 		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
 
