@@ -1,47 +1,49 @@
-PRO rv_readtree, output, output2, $
-	column_list=column_list, horg=horg, $
-	dir_snap=dir_snap, silent=silent, n_snap=n_snap, skip=skip
-
-	;;-----
-	;; Skip Process
-	;;-----
-	IF skip EQ 1L THEN BEGIN
-		output2 = {progs:-1}
-		RETURN
-	ENDIF
-	;;-----
-	;; General Settings
-	;;-----
-	dir_tree	= dir_snap + '../tree/'
+FUNCTION rv_ReadTree, settings, dir_data, data, n_snap, run=run
+	;output, output2, $
+	;column_list=column_list, horg=horg, $
+	;dir_snap=dir_snap, silent=silent, n_snap=n_snap, skip=skip
+;;-----
+;; Check procedure set
+;;-----
+IF run EQ 0L THEN RETURN, PTR_NEW({progs:-1},/no_copy)
+IF run EQ 1L THEN BEGIN
+	IF STRLEN(FILE_SEARCH(dir_data + 'rv_tree.sav')) GE 5L THEN BEGIN
+		RESTORE, dir_data + 'rv_tree.sav'
+		RETURN, PTR_NEW(output,/no_copy)
+	ENDIF ELSE BEGIN
+		run	= 2L
+	ENDELSE
+ENDIF
+IF run EQ 2L THEN BEGIN
+	PRINT, '        %%%%% (No previous works are found)'
 
 	;;-----
 	;; Find Snapshot Index
 	;;-----
-	OPENR, 10, dir_tree + 'tree.snaplist.txt'
+	OPENR, 10, settings.dir_tree + 'tree.snaplist.txt'
 	str	= ' '
 
-	snaplist= LONARR(FILE_LINES(dir_tree + 'tree.snaplist.txt'))
+	snaplist= LONARR(FILE_LINES(settings.dir_tree + 'tree.snaplist.txt'))
 	snapind = -1L
-	FOR i=0L, FILE_LINES(dir_tree + 'tree.snaplist.txt')-1L DO BEGIN
+	FOR i=0L, FILE_LINES(settings.dir_tree + 'tree.snaplist.txt')-1L DO BEGIN
 		READF, 10, str
 		dum	= STRPOS(str, 'snap_')
-		snaplist(i)	= LONG(STRMID(str, dum+5, 3))
+		snaplist(i)	= LONG(STRMID(str, dum+5, 4))
 		IF snaplist(i) EQ n_snap THEN snapind = i
 	ENDFOR
 	CLOSE, 10
 
-	IF snapind EQ 0L THEN BEGIN
-		output2	= {progs:-1}
-		RETURN
-	ENDIF
+	;;----- Skip the first snapshot
+	IF snapind EQ 0L THEN $
+		RETURN, PTR_NEW({progs:-1},/no_copy)
 
 	str	= snapind + snaplist(0)
-	str	= STRING(str, format='(I3.3)')
+	str	= STRING(str, format='(I4.4)')
 
 	;;-----
 	;; I/O
 	;;-----
-	fname	= dir_tree + 'tree.snapshot_' + str + $
+	fname	= settings.dir_tree + 'tree.snapshot_' + str + $
 		'.VELOCIraptor.tree'
 
 	;;-----
@@ -70,10 +72,13 @@ PRO rv_readtree, output, output2, $
 	;;-----
 	;; READ PREVIOUS SNAPDATA
 	;;-----
-	dum	= STRPOS(dir_snap, STRING(n_snap, format='(I3.3)'))
-	dum	= STRMID(dir_snap, 0, dum) + STRING(snaplist(snapind-1),format='(I3.3)') + $
-		STRMID(dir_snap, dum+3, STRLEN(dir_snap)-1L)
-	outpre	= rv_RawCatalog(dir_snap=dum, horg=horg, column_list=column_list, silent=silent)
+	dum	= settings.dir_catalog + settings.dir_catalog_pre + $
+		STRING(snaplist(snapind-1L),format='(I4.4)') + $
+		settings.dir_catalog_suf + '/'
+	ptr_pre	= rv_RawCatalog(settings, dum, run=1L)
+
+	outpre	= *ptr_pre
+	output	= *data.rv_raw
 
 	;;-----
 	;; Find Progenitors and List by their Mass / Distance
@@ -94,6 +99,8 @@ PRO rv_readtree, output, output2, $
 			mass_dum(j) = outpre.Mass_tot(cut)
 		ENDFOR
 
+		PRINT, 'modify the way of finding progenitor by using merit'
+		STOP
 		sort_ind= REVERSE(SORT(mass_dum))
 		prog_id	= prog_id(sort_ind)
 		IF(N_ELEMENTS(prog_id) GT N_ELEMENTS(plist_mass(0,*))) THEN BEGIN
@@ -104,7 +111,6 @@ PRO rv_readtree, output, output2, $
 		plist_merit(i,0:N_ELEMENTS(prog_id)-1L)	= prog_mr
 	ENDFOR
 
-	output2	= {progs:plist_mass, progs_merit:plist_merit}
-
-	RETURN
+	RETURN, PTR_NEW({progs:plist_mass, progs_merit:plist_merit},/no_copy)
+ENDIF
 END

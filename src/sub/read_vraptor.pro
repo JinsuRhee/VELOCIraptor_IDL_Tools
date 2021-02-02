@@ -26,15 +26,24 @@ PRO read_vraptor, settings, n_snap, $
 	alltype=alltype, longint=longint, yzics=yzics
 
 	;;-----
+	;; Base Structure
+	;;-----
+	data	= {$
+		rv_raw		: PTR_NEW(1), $
+		rv_tree		: PTR_NEW(1)}
+
+	;;-----
 	;; Compile all procedures first
 	;;-----
 	void	= rv_RawCatalog(settings, ' ', run=0L)
+	void	= rv_ReadTree(settings, ' ', ' ', run=0L)
 
 	;;-----
 	;; Path Settings
 	;;-----
 	dir_data	= settings.dir_catalog + $
-		settings.dir_catalog_pre + STRING(n_snap,format='(I4.4)') + '/'
+		settings.dir_catalog_pre + STRING(n_snap,format='(I4.4)') + $
+		settings.dir_catalog_suf + '/'
 
 	IF STRLEN(FILE_SEARCH(dir_data)) LE 5L THEN RETURN
 
@@ -43,33 +52,17 @@ PRO read_vraptor, settings, n_snap, $
 	;; Read The Raw Catalogue
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading The Raw Catalog...', /bef
-	tmp_out	= rv_RawCatalog(settings, dir_data, run=settings.P_VRrun_step(0))
-	output	= rv_makestr(tmp_out, output=output)
+	data.rv_raw	= rv_RawCatalog(settings, dir_data, run=settings.P_VRrun_step(0))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+
+	;;-----
+	;; Read Tree
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
+	data.rv_tree	= rv_ReadTree(settings, dir_data, data, n_snap, run=settings.P_VRrun_step(1))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	STOP
-	IF STRLEN(FILE_SEARCH(dir_data + 'rv_io.sav')) LT 5L OR $
-		KEYWORD_SET(rv_raw) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-		output2=rv_RawCatalog(dir_snap=dir_snap, horg=horg, column_list=column_list, silent=silent)
-
-		save, filename=dir_snap + 'rv_io.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_io.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
-
-
-
-
-
-
-
 
 ;+)
 ;
@@ -106,55 +99,33 @@ PRO read_vraptor, settings, n_snap, $
 	;;-----
 	dir_snap= dir_catalog
 
-	;;-----
-	;; Read The Raw Catalogue
-	;;-----
-	;if KEYWORD_SET(verbose) then tic
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Reading The Raw Catalog...'
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
-	;if strlen(file_search(dir_snap + 'rv_io.sav')) lt 5L or KEYWORD_SET(rv_raw) then begin
-	;	if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-	;	output2=rv_RawCatalog(dir_snap=dir_snap, horg=horg, column_list=column_list, silent=silent)
-
-	;	save, filename=dir_snap + 'rv_io.sav', output2
-	;endif else begin
-	;        restore, dir_snap + 'rv_io.sav'
-	;endelse
-	;output	= rv_makestr(output2, output=output)
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then toc, /verbose
 
 
 	;;-----
 	;; Read Progenitors
 	;;-----
 
-	if KEYWORD_SET(verbose) then tic
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Reading Tree		     '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
+	;if KEYWORD_SET(verbose) then tic
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Reading Tree		     '
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
 
-	if strlen(file_search(dir_snap + 'rv_tree.sav')) lt 5L or KEYWORD_SET(rv_tree) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
+	;if strlen(file_search(dir_snap + 'rv_tree.sav')) lt 5L or KEYWORD_SET(rv_tree) then begin
+	;	if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
 
-		rv_readtree, output, output2, $
-			dir_snap=dir_snap, skip=KEYWORD_SET(skip_tree), n_snap=n_snap, horg=horg, $
-			column_list=column_list
+	;	rv_readtree, output, output2, $
+	;		dir_snap=dir_snap, skip=KEYWORD_SET(skip_tree), n_snap=n_snap, horg=horg, $
+	;		column_list=column_list
 
-		save, filename=dir_snap + 'rv_tree.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_tree.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
+	;	save, filename=dir_snap + 'rv_tree.sav', output2
+	;endif else begin
+	;        restore, dir_snap + 'rv_tree.sav'
+	;endelse
+	;output	= rv_makestr(output2, output=output)
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
+	;if KEYWORD_SET(verbose) then PRINT, ' '
+	;if KEYWORD_SET(verbose) then PRINT, ' '
+	;if KEYWORD_SET(verbose) then toc, /verbose
 
 	;;-----
 	;; Apply the mass limit

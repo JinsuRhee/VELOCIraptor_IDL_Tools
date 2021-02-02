@@ -4,13 +4,13 @@ FUNCTION rv_RawCatalog, settings, dir_data, run=run
 ;;-----
 ;; Check procedure set
 ;;-----
-IF run EQ 0L THEN RETURN, -1
+IF run EQ 0L THEN RETURN, PTR_NEW({rv_rawcatalog:-1},/no_copy)
 IF run EQ 1L THEN BEGIN
 	IF STRLEN(FILE_SEARCH(dir_data + 'rv_io.sav')) GE 5L THEN BEGIN
 		RESTORE, dir_data + 'rv_io.sav'
-		RETURN, output
+		RETURN, PTR_NEW(output,/no_copy)
 	ENDIF ELSE BEGIN
-		run = 2L
+		run	= 2L
 	ENDELSE
 ENDIF
 IF run EQ 2L THEN BEGIN
@@ -114,6 +114,6 @@ IF run EQ 2L THEN BEGIN
 	ENDFOR
 
 	SAVE, filename=dir_data + 'rv_io.sav', output
-	RETURN, output
+	RETURN, PTR_NEW(output,/no_copy)
 ENDIF
 END
