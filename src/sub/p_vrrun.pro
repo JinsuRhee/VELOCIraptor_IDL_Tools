@@ -1,16 +1,18 @@
-Pro p_VRrun, settings
+PRO P_VRrun, settings
 
 	N1	= Settings.P_VRrun_snap(0)
 	N2	= Settings.P_VRrun_snap(1)
 	DN	= Settings.P_VRrun_snap(2)
 
-	for i=N1, N2, DN do begin
+	FOR i=N1, N2, DN DO BEGIN
 		n_snap	= i
-		Dir_catalog	= settings.dir_catalog + $
-			settings.dir_catalog_pre + $
-			string(n_snap,format='(I3.3)') + $
-			settings.dir_catalog_suf + '/'
-		IF STRLEN(FILE_SEARCH(Dir_catalog)) LE 5 THEN CONTINUE
+		;Dir_catalog	= settings.dir_catalog + $
+		;	settings.dir_catalog_pre + $
+		;	STRING(n_snap,format='(I3.3)') + $
+		;	settings.dir_catalog_suf + '/'
+		;IF STRLEN(FILE_SEARCH(Dir_catalog)) LE 5 THEN CONTINUE
+		read_vraptor, settings, i
+		STOP
 		tmp	= 'void = read_vraptor(' + $
 			'Dir_catalog    = dir_catalog,' + $
 			'Dir_raw	= Settings.dir_raw,' + $

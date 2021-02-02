@@ -22,35 +22,35 @@ Pro read_nml, settings, file=file
 	endfor
 	CLOSE, 10
 
-	IF settings.simname EQ 'YZiCS2' THEN BEGIN
-		dir_catalog = '/storage5/FORNAX/VELOCI_RAPTOR/' + STRTRIM(settings.cname,2) + '/Galaxy/'
-		IF settings.P_VRrun_horg EQ 'h' THEN $
-			dir_catalog = '/storage5/FORNAX/VELOCI_RAPTOR/' + STRTRIM(settings.cname,2) + '/Halo/'
-		dir_raw	= '/storage5/FORNAX/KISTI_OUTPUT/' + STRTRIM(settings.cname,2) + '/snapshots/'
-		dir_save= '/storage5/FORNAX/KISTI_OUTPUT/' + STRTRIM(settings.cname,2) + '/'
-	ENDIF
+	;IF settings.simname EQ 'YZiCS2' THEN BEGIN
+	;	dir_catalog = '/storage5/FORNAX/VELOCI_RAPTOR/' + STRTRIM(settings.cname,2) + '/Galaxy/'
+	;	IF settings.P_VRrun_horg EQ 'h' THEN $
+	;		dir_catalog = '/storage5/FORNAX/VELOCI_RAPTOR/' + STRTRIM(settings.cname,2) + '/Halo/'
+	;	dir_raw	= '/storage5/FORNAX/KISTI_OUTPUT/' + STRTRIM(settings.cname,2) + '/snapshots/'
+	;	dir_save= '/storage5/FORNAX/KISTI_OUTPUT/' + STRTRIM(settings.cname,2) + '/'
+	;ENDIF
 
-	IF settings.simname EQ 'NH' THEN BEGIN
-		dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
-		IF settings.P_VRrun_horg EQ 'h' THEN $
-			dir_catalog = '/storage5/NewHorizon/VELOCIraptor/Halo/'
+	;IF settings.simname EQ 'NH' THEN BEGIN
+	;	dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
+	;	IF settings.P_VRrun_horg EQ 'h' THEN $
+	;		dir_catalog = '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
-		dir_raw         = '/storage1/NewHorizon/snapshots/'
-		dir_save	= '/storage5/NewHorizon/VELOCIraptor/VR_Galaxy/'
-		IF settings.P_VRrun_horg EQ 'h' THEN $
-			dir_save = '/storage5/NewHorizon/VELOCIraptor/VR_Halo/'
-	ENDIF
+	;	dir_raw         = '/storage6/NewHorizon/'
+	;	dir_save	= '/storage5/NewHorizon/VELOCIraptor/VR_Galaxy/'
+	;	IF settings.P_VRrun_horg EQ 'h' THEN $
+	;		dir_save = '/storage5/NewHorizon/VELOCIraptor/VR_Halo/'
+	;ENDIF
 
-	IF settings.simname EQ 'YZiCS' THEN BEGIN
-		dir_catalog    = '/storage5/FORNAX/VELOCI_RAPTOR/YZiCS/c' + STRTRIM(settings.cname,2) + '/Galaxy/'
-		IF settings.P_VRrun_horg EQ 'h' THEN $
-			dir_catalog    = '/storage5/FORNAX/VELOCI_RAPTOR/YZiCS/c' + STRTRIM(settings.cname,2) + '/Halo/'
-		dir_raw	= '/storage3/Clusters/' + STRTRIM(settings.cname,2) + '/snapshots/'
-		dir_save= '/storage3/Clusters/Vraptor/c' + STRTRIM(settings.cname,2) + '/VR_Galaxy/'
-		IF settings.P_VRrun_horg EQ 'h' THEN $
-			dir_save = '/storage3/Clusters/Vraptor/c' + STRTRIM(settings.cname,2) + '/VR_Halo/'
-	ENDIF
+	;IF settings.simname EQ 'YZiCS' THEN BEGIN
+	;	dir_catalog    = '/storage5/FORNAX/VELOCI_RAPTOR/YZiCS/c' + STRTRIM(settings.cname,2) + '/Galaxy/'
+	;	IF settings.P_VRrun_horg EQ 'h' THEN $
+	;		dir_catalog    = '/storage5/FORNAX/VELOCI_RAPTOR/YZiCS/c' + STRTRIM(settings.cname,2) + '/Halo/'
+	;	dir_raw	= '/storage3/Clusters/' + STRTRIM(settings.cname,2) + '/snapshots/'
+	;	dir_save= '/storage3/Clusters/Vraptor/c' + STRTRIM(settings.cname,2) + '/VR_Galaxy/'
+	;	IF settings.P_VRrun_horg EQ 'h' THEN $
+	;		dir_save = '/storage3/Clusters/Vraptor/c' + STRTRIM(settings.cname,2) + '/VR_Halo/'
+	;ENDIF
 
-	settings	= CREATE_STRUCT(settings, 'dir_catalog', dir_catalog, $
-		'dir_raw', dir_raw, 'dir_save', dir_save)
+	;settings	= CREATE_STRUCT(settings, 'dir_catalog', dir_catalog, $
+	;	'dir_raw', dir_raw, 'dir_save', dir_save)
 End
