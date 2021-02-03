@@ -24,6 +24,6 @@ Pro main
 	;;-----
 	P_VRrun, settings
 
-	stop
+	STOP
 
 End

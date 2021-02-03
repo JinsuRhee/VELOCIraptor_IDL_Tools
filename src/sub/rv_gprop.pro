@@ -1,58 +1,66 @@
-PRO rv_gprop, output, output2, $
-	dir_snap=dir_snap, dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-	horg=horg, num_thread=num_thread, n_snap=n_snap, flux_list=flux_list, $
-	SFR_T=SFR_T, SFR_R=SFR_R, MAG_R=MAG_R, skip=skip
+FUNCTION rv_GProp, settings, dir_data, data, n_snap, run=run
+;;-----
+;; Check procedure set
+;;-----
+IF run EQ 0L THEN RETURN, PTR_NEW({ABMag:-1, SFR:-1, SFR_R:-1, SFR_T:-1, MAG_R:-1},/no_copy)
+IF run EQ 1L THEN BEGIN
+	IF STRLEN(FILE_SEARCH(dir_data + 'rv_gprop.sav')) GE 5L THEN BEGIN
+		RESTORE, dir_data + 'rv_gprop.sav'
+		RETURN, PTR_NEW(output,/no_copy)
+	ENDIF ELSE BEGIN
+		run	= 2L
+	ENDELSE
+ENDIF
+IF run EQ 2L THEN BEGIN
+	PRINT, '        %%%%% (No previous works are found)'
 
-	;;-----
-	;; Skip Process
-	;;-----
-	IF skip EQ 1L THEN BEGIN
-		output2	= {ABMag:-1, SFR:-1, SFR_R:-1, SFR_T:-1, MAG_R:-1}
-		RETURN
-	ENDIF
-
+	rawdata	= *data.rv_raw
+	idlist	= *data.rv_id
+	ptdata	= *data.rv_ptmatch
 	;;-----
 	;; Settings
 	;;-----
-	n_gal	= n_elements(output.id)
-	n_part	= n_elements(output.p_id)
-	n_flux	= n_elements(flux_list)
-	n_sfr	= n_elements(SFR_R)
-	n_magap	= n_elements(MAG_R)
+	n_gal	= N_ELEMENTS(rawdata.id)
+	n_part	= N_ELEMENTS(idlist.p_id)
+	n_flux	= N_ELEMENTS(settings.flux_list)
+	n_sfr	= N_ELEMENTS(settings.SFR_R)
+	n_magap	= N_ELEMENTS(settings.MAG_R)
+
 	;;-----
 	;; Allocate Memory
 	;;-----
-	fl		= dblarr(n_part, n_elements(flux_list)) - 1.0d8
+	fl		= DBLARR(n_part, N_ELEMENTS(settings.flux_list)) - 1.0d8
 
-	sfactor		= dblarr(n_part)
-	gyr		= dblarr(n_part)
+	sfactor		= DBLARR(n_part)
+	gyr		= DBLARR(n_part)
 
-	abmag		= dblarr(n_gal, n_flux, n_magap)
-	SFR		= dblarr(n_gal, n_sfr)
+	abmag		= DBLARR(n_gal, n_flux, n_magap)
+	SFR		= DBLARR(n_gal, n_sfr)
 
-	print, '        %%%%% GProp - MEMORY ALLOCATED'
+	PRINT, '        %%%%% GProp - MEMORY ALLOCATED'
 
 	;;-----
 	;; Conformal Time to SFactor and Gyr
 	;;-----
 
-	dummy	= get_gyr(output.p_age, dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-		num_thread=num_thread, n_snap=n_snap)
+	dummy	= get_gyr(ptdata.p_age, dir_raw=settings.dir_raw, $
+		dir_lib=settings.dir_lib, num_thread=settings.num_thread, n_snap=n_snap)
 
 	sfactor = dummy(*,0) & gyr = dummy(*,1)
 
-	print, '        %%%%% GProp - CONFORMAL TIME CONVERTED'
+	PRINT, '        %%%%% GProp - CONFORMAL TIME CONVERTED'
 
 	;;-----
 	;; SFR Calculation
 	;;-----
 
-	SFR	= get_sfr(output.xc, output.yc, output.zc, output.r_halfmass, $
-		output.b_ind, output.u_ind, output.p_pos, output.p_mass, gyr, $
-		SFR_T=SFR_T, SFR_R=SFR_R, lib=dir_lib, num_thread=num_thread)
+	SFR	= get_sfr(rawdata.xc, rawdata.yc, rawdata.zc, rawdata.r_halfmass, $
+		idlist.b_ind, idlist.u_ind, ptdata.p_pos, ptdata.p_mass, gyr, $
+		SFR_T=settings.SFR_T, SFR_R=settings.SFR_R, $
+		lib=settings.dir_lib, num_thread=settings.num_thread)
 
-	output2	= create_struct('SFR', SFR)
-		;tmp0	= 'output2 = create_struct('
+	output	= CREATE_STRUCT('SFR', SFR)
+		;tmp0	= 'output2 = CREATE_STRUCT('
 
 		;FOR i=0L, n_sfr-1L DO BEGIN
 		;	tmp = 'SFR'
@@ -69,21 +77,24 @@ PRO rv_gprop, output, output2, $
 		;tmp0	= tmp0 + ')'
 		;void	= execute(tmp0)
 
-	print, '        %%%%% GProp - SFRs are calculated'
+	PRINT, '        %%%%% GProp - SFRs are calculated'
 
 	;;-----
 	;; Magnitude
 	;;-----
 
-	abmag	= get_mag(output.xc, output.yc, output.zc, output.r_halfmass, $
-		output.b_ind, output.u_ind, output.p_pos, output.p_met, gyr, output.p_mass, $
-		MAG_R=MAG_R, flux_list=flux_list, lib=dir_lib, num_thread=num_thread)
+	abmag	= get_mag(rawdata.xc, rawdata.yc, rawdata.zc, rawdata.r_halfmass, $
+		idlist.b_ind, idlist.u_ind, ptdata.p_pos, ptdata.p_met, gyr, ptdata.p_mass, $
+		MAG_R=settings.MAG_R, flux_list=settings.flux_list, $
+		lib=settings.dir_lib, num_thread=settings.num_thread)
 
-	output2	= create_struct(output2, 'ABMag', abmag)
+	output	= CREATE_STRUCT(output, 'ABMag', abmag)
 
-	output2 = create_struct(output2, 'SFR_R', SFR_R, 'SFR_T', SFR_T, $
-		'MAG_R', MAG_R)
-	print, '        %%%%% GProp - Magnitudes are calculated'
+	output	= CREATE_STRUCT(output, 'SFR_R', settings.SFR_R, 'SFR_T', settings.SFR_T, $
+		'MAG_R', settings.MAG_R)
+	PRINT, '        %%%%% GProp - Magnitudes are calculated'
 
-	RETURN
-End
+	SAVE, filename=dir_data + 'rv_gprop.sav', output
+	RETURN, PTR_NEW(output,/no_copy)
+ENDIF
+END

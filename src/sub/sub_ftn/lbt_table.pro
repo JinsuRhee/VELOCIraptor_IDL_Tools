@@ -1,3 +1,18 @@
+Function lbt_int, X, _extra=extra
+
+	;YZiCS2
+	;OM	= 0.311100006103516E+00
+	;OL	= 0.688899993896484E+00
+
+	;NH / YZiCS
+	;OM	= 0.272000014781952E+00
+	;OL	= 0.727999985218048E+00
+	oM	= extra.oM
+	oL	= extra.oL
+
+	return, 1./(1.+X)/sqrt(OM*(1.+X)^3 + OL)
+End
+
 Pro lbt_table, oM=oM, oL=oL, H0=H0, dir=dir
 
 	tmp_red = dindgen(10000)/9999.*0.98 + 0.02
@@ -16,20 +31,6 @@ Pro lbt_table, oM=oM, oL=oL, H0=H0, dir=dir
 
 	tmp_gyr	= tmp_gyr / H0 *3.08568025e19 / 3.1536000d+16
 
-	save, filename='LBT_table.sav', tmp_red, tmp_gyr
-End
-
-Function lbt_int, X, _extra=extra
-
-	;YZiCS2
-	;OM	= 0.311100006103516E+00
-	;OL	= 0.688899993896484E+00
-
-	;NH / YZiCS
-	;OM	= 0.272000014781952E+00
-	;OL	= 0.727999985218048E+00
-	oM	= extra.oM
-	oL	= extra.oL
-
-	return, 1./(1.+X)/sqrt(OM*(1.+X)^3 + OL)
+	doM = oM & doL = oL & dH0 = H0
+	save, filename=dir + 'LBT_table.sav', tmp_red, tmp_gyr, doM , doL, dH0
 End

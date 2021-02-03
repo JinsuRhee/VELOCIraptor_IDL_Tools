@@ -1,37 +1,56 @@
 ;; Procedure that converts conformal time to scale factor and Gyr
 
 FUNCTION get_gyr, t_conf, $
-	dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-	num_thread=num_thread, n_snap=n_snap, oM=oM, oL=oL, H0=H0
+	dir_raw=dir_raw, dir_lib=dir_lib, $
+	num_thread=num_thread, n_snap=n_snap
 
 	;;-----
 	;; Settings
 	;;-----
 	IF(~KEYWORD_SET(num_thread)) THEN SPAWN, 'nproc --all', num_thread
-	IF(~KEYWORD_SET(num_thread)) THEN num_thread = long(num_thread)
+	IF(~KEYWORD_SET(num_thread)) THEN num_thread = LONG(num_thread)
 
-	infoname	= dir_raw + 'output_' + string(n_snap,format='(I5.5)') + $
+	infoname	= dir_raw + 'output_' + STRING(n_snap,format='(I5.5)') + $
 		'/info_' + string(n_snap,format='(I5.5)') + '.txt'
 	rd_info, siminfo, file=infoname
 
-	IF simname EQ 'NH' THEN BEGIN
-		RESTORE, dir_lib + 'sub_ftn/conformal_table_NH.sav'
-		RESTORE, dir_lib + 'sub_ftn/LBT_table_NH.sav'
-	ENDIF ELSE IF simname EQ 'YZiCS' THEN BEGIN
-		RESTORE, dir_lib + 'sub_ftn/conformal_table_YZiCS.sav'
-		RESTORE, dir_lib + 'sub_ftn/LBT_table_YZiCS.sav'
-	ENDIF ELSE IF simname EQ 'YZiCS2' THEN BEGIN
-		RESTORE, dir_lib + 'sub_ftn/conformal_table_YZiCS2.sav'
-		RESTORE, dir_lib + 'sub_ftn/LBT_table_YZiCS2.sav'
+	oM	= siminfo.omega_m
+	oL	= siminfo.omega_l
+	H0	= siminfo.h0
+
+	;;-----
+	;; Run or Load - conformal time table
+	;;-----
+	skip	= 0L
+	conf_file	= dir_lib + 'sub_ftn/conformal_table.sav'
+	IF STRLEN(FILE_SEARCH(conf_file)) GE 5L THEN BEGIN
+		RESTORE, conf_file
+		IF doM NE oM OR doL NE oL THEN skip=1L
 	ENDIF ELSE BEGIN
-		IF ~KEYWORD_SET(oM) OR ~KEYWORD_SET(oL) OR ~KEYWORD_SET(H0) THEN BEGIN
-			PRINT, 'No available cosmology chosen:'
-			PRINT, '	Set keywords, oM=, oL=, H0='
-			STOP
-		ENDIF
-		conformal, oM=oM, oL=oL, dir=dir_lib + 'sub_ftn/'
-		lbt_table, oM=oM, oL=oL, H0=H0, dir=dir_lib + 'sub_ftn/'
+		skip	= 1L
 	ENDELSE
+
+	IF skip EQ 1L THEN BEGIN
+		conformal, oM=oM, oL=oL, dir=dir_lib + 'sub_ftn/'
+		RESTORE, conf_file
+	ENDIF
+		
+	;;-----
+	;; Run or Load - Gyr time table
+	;;-----
+	skip	= 0L
+	lbt_file	= dir_lib + 'sub_ftn/LBT_table.sav'
+	IF STRLEN(FILE_SEARCH(lbt_file)) GE 5L THEN BEGIN
+		RESTORE, lbt_file
+		IF doM NE oM OR doL NE oL OR dH0 NE H0 THEN skip=1L
+	ENDIF ELSE BEGIN
+		skip	= 1L
+	ENDELSE
+
+	IF skip EQ 1L THEN BEGIN
+		lbt_table, oM=oM, oL=oL, H0=H0, dir=dir_lib + 'sub_ftn/'
+		RESTORE, lbt_file
+	ENDIF
 
 	;;-----
 	;; Allocate Memory

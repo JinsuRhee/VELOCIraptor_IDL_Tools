@@ -37,7 +37,8 @@
       INTEGER(KIND=4) dom_list2(larr(2),larr(5)), matchok
       INTEGER(KIND=4) threadnum, g_num, js_order
       Real(kind=8) dmp_mass, ptype
-
+      INTEGER(KIND=8) noptcl
+      noptcl = -9223372036854775800
 
       n_ptcl    = larr(1)
       n_gal     = larr(2)
@@ -162,43 +163,16 @@
             DO l=1, 9
               p_d2(dumint,l) = -1.0D8
             ENDDO
-            !p_d2(dumint,1) = xp(k,1)
-            !p_d2(dumint,2) = xp(k,2)
-            !p_d2(dumint,3) = xp(k,3)
-            !  
-            !p_d2(dumint,4) = vp(k,1)
-            !p_d2(dumint,5) = vp(k,2)
-            !p_d2(dumint,6) = vp(k,3)
-
-            !p_d2(dumint,7) = mp(k)
-            !p_d2(dumint,8) = ap(k)
-            !p_d2(dumint,9) = zp(k)
-
           ENDDO
 
           DO k=ind_u(g_num,1)+1, ind_u(g_num,2)+1
             dumint = dumint + 1
-            !p_skip(dumint) = -1
-            !IF(xp(k,1) .GT. -1.0D7) p_skip(dumint) = 1
 
             p_i2(dumint,1) = id(k)
 
             DO l=1, 9
               p_d2(dumint,l) = -1.0D8
             ENDDO
-
-            !p_d2(dumint,1) = xp(k,1)
-            !p_d2(dumint,2) = xp(k,2)
-            !p_d2(dumint,3) = xp(k,3)
-            !  
-            !p_d2(dumint,4) = vp(k,1)
-            !p_d2(dumint,5) = vp(k,2)
-            !p_d2(dumint,6) = vp(k,3)
-
-            !p_d2(dumint,7) = mp(k)
-            !p_d2(dumint,8) = ap(k)
-            !p_d2(dumint,9) = zp(k)
-
           ENDDO
 
           !!-----
@@ -269,6 +243,7 @@
         n0 = ind2 - ind1 + 1
         DO j=ind1, ind2
           IF(mp(j) .GT. -1.0d7) n1 = n1 + 1
+          IF(id(j) .LT. noptcl) n0 = n0 - 1
         ENDDO
 
         ind1 = ind_u(i,1) + 1
@@ -276,6 +251,7 @@
         n0 = n0 + ind2 - ind1 + 1
         DO j=ind1, ind2
           IF(mp(j) .GT. -1.0d7) n1 = n1 + 1
+          IF(id(j) .LT. noptcl) n0 = n0 - 1
         ENDDO
 
         rate(i) = float(n1) / float(n0)
@@ -413,7 +389,7 @@
                 gal_id(i,1) .GE. raw_id(1)) THEN
 
           ind0 = 1
-          ind1 = n_raw 
+          ind1 = n_raw
           DO WHILE(ind1 - ind0 .GT. 10)
             l = int((ind1 + ind0)/2)
 
@@ -429,6 +405,8 @@
             DO l=ind0, ind1
               IF(gal_id(i,1) .EQ. raw_id(l)) mi = l
             ENDDO
+          ELSE
+            mi = ind0
           ENDIF
 
           IF(mi .GE. 1) THEN
