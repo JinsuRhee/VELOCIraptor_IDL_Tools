@@ -1,16 +1,3 @@
-PRO conformal, oM=oM, oL=oL, dir=dir
-
-	sfact	= dindgen(10000)/9999.*0.98 + 0.02 
-	conft	= dblarr(10000)
-	for i=0L, 9999L do begin
-		qsimp, 'YY', sfact(i), 1, val, /double, oM=oM, oL=oL
-		conft(i)	= val * (-1.)
-	endfor
-	;conft(i) = qsimp('YY', sfact(i), 1., /double, oM=oM, oL=oL)
-	;conft	= conft * (-1.)
-	save, filename=dir + 'conformal_table.sav', sfact, conft
-End
-
 Function YY, A, _extra=extra
 	;; NH / YZiCS
 	;OM=0.272000014781952E+00
@@ -22,4 +9,17 @@ Function YY, A, _extra=extra
 	oM	= extra.oM
 	oL	= extra.oL
 	Return, 1./(A^3 * sqrt(OM / A^3 + OL))
+End
+PRO conformal, oM=oM, oL=oL, dir=dir
+
+	sfact	= dindgen(10000)/9999.*0.98 + 0.02 
+	conft	= dblarr(10000)
+	for i=0L, 9999L do begin
+		qsimp, 'YY', sfact(i), 1, val, /double, oM=oM, oL=oL
+		conft(i)	= val * (-1.)
+	endfor
+	;conft(i) = qsimp('YY', sfact(i), 1., /double, oM=oM, oL=oL)
+	;conft	= conft * (-1.)
+	doM = oM & doL = oL
+	save, filename=dir + 'conformal_table.sav', sfact, conft, doM, doL
 End

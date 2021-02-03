@@ -37,7 +37,8 @@
       INTEGER(KIND=4) dom_list2(larr(2),larr(5)), matchok
       INTEGER(KIND=4) threadnum, g_num, js_order
       Real(kind=8) dmp_mass, ptype
-
+      INTEGER(KIND=8) noptcl
+      noptcl = -9223372036854775800
 
       n_ptcl    = larr(1)
       n_gal     = larr(2)
@@ -269,6 +270,7 @@
         n0 = ind2 - ind1 + 1
         DO j=ind1, ind2
           IF(mp(j) .GT. -1.0d7) n1 = n1 + 1
+          IF(id(j) .LT. noptcl) n0 = n0 - 1
         ENDDO
 
         ind1 = ind_u(i,1) + 1
@@ -276,6 +278,7 @@
         n0 = n0 + ind2 - ind1 + 1
         DO j=ind1, ind2
           IF(mp(j) .GT. -1.0d7) n1 = n1 + 1
+          IF(id(j) .LT. noptcl) n0 = n0 - 1
         ENDDO
 
         rate(i) = float(n1) / float(n0)

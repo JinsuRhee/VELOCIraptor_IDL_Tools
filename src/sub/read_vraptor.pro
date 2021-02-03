@@ -12,18 +12,18 @@ PRO read_vraptor_msg, str, bef=bef, aft=aft
 	ENDIF
 END
 
-PRO read_vraptor, settings, n_snap, $
+PRO read_vraptor, settings, n_snap
 
-	mrange=mrange, num_thread=num_thread, $
-	dir_raw=dir_raw, dir_lib=dir_lib, dir_save=dir_save, simname=simname, $
-	column_list=column_list, flux_list=flux_list, $
-	silent=silent, verbose=verbose, $
-	rv_raw=rv_raw, rv_tree=rv_tree, rv_id=rv_id, rv_match=rv_match, $
-	rv_prop=rv_prop, rv_gprop=rv_gprop, rv_save=rv_save, $
-	skip_tree=skip_tree, skip_id=skip_id, skip_match=skip_match, $
-	skip_prop=skip_prop, skip_gprop=skip_gprop, skip_save=skip_save, $
-	SFR_T=SFR_t, SFR_R=SFR_r, MAG_R=MAG_r, $
-	alltype=alltype, longint=longint, yzics=yzics
+	;mrange=mrange, num_thread=num_thread, $
+	;dir_raw=dir_raw, dir_lib=dir_lib, dir_save=dir_save, simname=simname, $
+	;column_list=column_list, flux_list=flux_list, $
+	;silent=silent, verbose=verbose, $
+	;rv_raw=rv_raw, rv_tree=rv_tree, rv_id=rv_id, rv_match=rv_match, $
+	;rv_prop=rv_prop, rv_gprop=rv_gprop, rv_save=rv_save, $
+	;skip_tree=skip_tree, skip_id=skip_id, skip_match=skip_match, $
+	;skip_prop=skip_prop, skip_gprop=skip_gprop, skip_save=skip_save, $
+	;SFR_T=SFR_t, SFR_R=SFR_r, MAG_R=MAG_r, $
+	;alltype=alltype, longint=longint, yzics=yzics
 
 	;;-----
 	;; Base Structure
@@ -31,14 +31,18 @@ PRO read_vraptor, settings, n_snap, $
 	data	= {$
 		rv_raw		: PTR_NEW(1), $
 		rv_tree		: PTR_NEW(1), $
-		rv_id		: PTR_NEW(1)}
+		rv_id		: PTR_NEW(1), $
+		rv_ptmatch	: PTR_NEW(1), $
+		rv_gprop	: PTR_NEW(1)}
 
 	;;-----
 	;; Compile all procedures first
 	;;-----
-	void	= rv_RawCatalog(settings, ' ', run=0L)
-	void	= rv_ReadTree(settings, ' ', ' ', run=0L)
-	void	= rv_ReadID(settings, ' ', ' ', run=0L)
+	void	= rv_RawCatalog	(settings, ' ', run=0L)
+	void	= rv_ReadTree	(settings, ' ', ' ', 1L, run=0L)
+	void	= rv_ReadID	(settings, ' ', ' ', run=0L)
+	void	= rv_PTMatch	(settings, ' ', ' ', 1L, run=0L)
+	void	= rv_GProp	(settings, ' ', ' ', 1L, run=0L)
 
 	;;-----
 	;; Path Settings
@@ -68,27 +72,27 @@ PRO read_vraptor, settings, n_snap, $
 	;;-----
 	;; Read Particle IDs
 	;;-----
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Particle IDs ...', /bef
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Particle IDs...', /bef
 	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(2))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
+	;;-----
+	;; Particle Matching
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Particle Matching...', /bef
+	data.rv_ptmatch	= rv_PTMatch(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(3))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+
+	;;-----
+	;; Galaxy Property
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Galaxy Property...', /bef
+	data.rv_gprop	= rv_GProp(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(4))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 	STOP
 
-	if strlen(file_search(dir_snap + 'rv_id.sav')) lt 5L or KEYWORD_SET(rv_id) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-		rv_readid, output2, dir_snap=dir_snap, horg=horg, skip=KEYWORD_SET(skip_id)
-
-		save, filename=dir_snap + 'rv_id.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_id.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
-	STOP
 
 ;+)
 ;
@@ -151,86 +155,35 @@ PRO read_vraptor, settings, n_snap, $
 		if KEYWORD_SET(verbose) then PRINT, ' '
 	endif
 
-	;;-----
-	;; Read Particle IDs
-	;;-----
 
-	if KEYWORD_SET(verbose) then tic
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Reading Particle ID       '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
-	if strlen(file_search(dir_snap + 'rv_id.sav')) lt 5L or KEYWORD_SET(rv_id) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-		rv_readid, output2, dir_snap=dir_snap, horg=horg, skip=KEYWORD_SET(skip_id)
-
-		save, filename=dir_snap + 'rv_id.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_id.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
-
-	;;-----
-	;; Particle Matching
-	;;-----
-
-	if KEYWORD_SET(verbose) then tic
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Particle Matching         '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	print, 'negative id set'
-	if strlen(file_search(dir_snap + 'rv_ptcl.sav')) lt 5L or KEYWORD_SET(rv_match) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-		if ~KEYWORD_SET(num_thread) then SPWAN, 'nproc --all', num_thread
-		if ~KEYWORD_SET(num_thread) then num_tread = long(num_thread)
-
-		rv_ptmatch, output, output2, dir_snap=dir_snap, dir_raw=dir_raw, dir_lib=dir_lib, $
-			horg=horg, num_thread=num_thread, longint=KEYWORD_SET(longint), $
-			n_snap=n_snap, skip=KEYWORD_SET(skip_match), yzics=KEYWORD_SET(yzics)
-
-		SAVE, filename=dir_snap + 'rv_ptcl.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_ptcl.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
 
 	;;-----
 	;; Galaxy Property
 	;;-----
-	if KEYWORD_SET(verbose) then tic
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Galaxy Property         '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
+	;if KEYWORD_SET(verbose) then tic
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Galaxy Property         '
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
 
-	if strlen(file_search(dir_snap + 'rv_gprop.sav')) lt 5L or KEYWORD_SET(rv_gprop) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
+	;if strlen(file_search(dir_snap + 'rv_gprop.sav')) lt 5L or KEYWORD_SET(rv_gprop) then begin
+	;	if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
 
-		if ~KEYWORD_SET(num_thread) then SPWAN, 'nproc --all', num_thread
-		if ~KEYWORD_SET(num_thread) then num_tread = long(num_thread)
+	;	if ~KEYWORD_SET(num_thread) then SPWAN, 'nproc --all', num_thread
+	;	if ~KEYWORD_SET(num_thread) then num_tread = long(num_thread)
 
-		rv_gprop, output, output2, dir_snap=dir_snap, dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-			horg=horg, num_thread=num_thread, n_snap=n_snap, flux_list=flux_list, $
-			SFR_T=SFR_t, SFR_R=SFR_R, MAG_R=MAG_R, skip=KEYWORD_SET(skip_gprop)
+	;	rv_gprop, output, output2, dir_snap=dir_snap, dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
+	;		horg=horg, num_thread=num_thread, n_snap=n_snap, flux_list=flux_list, $
+	;		SFR_T=SFR_t, SFR_R=SFR_R, MAG_R=MAG_R, skip=KEYWORD_SET(skip_gprop)
 
-		save, filename=dir_snap + 'rv_gprop.sav', output2
-	endif else begin
-	        restore, dir_snap + 'rv_gprop.sav'
-	endelse
-	output	= rv_makestr(output2, output=output)
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
+	;	save, filename=dir_snap + 'rv_gprop.sav', output2
+	;endif else begin
+	;        restore, dir_snap + 'rv_gprop.sav'
+	;endelse
+	;output	= rv_makestr(output2, output=output)
+	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
+	;if KEYWORD_SET(verbose) then PRINT, ' '
+	;if KEYWORD_SET(verbose) then PRINT, ' '
+	;if KEYWORD_SET(verbose) then toc, /verbose
 
 	;;-----
 	;; HDF5 output
