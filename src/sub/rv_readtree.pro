@@ -96,8 +96,8 @@ IF run EQ 2L THEN BEGIN
 			mass_dum(j) = outpre.Mass_tot(cut)
 		ENDFOR
 
-		PRINT, 'modify the way of finding progenitor by using merit'
-		STOP
+		;PRINT, 'modify the way of finding progenitor by using merit'
+		;STOP
 		sort_ind= REVERSE(SORT(mass_dum))
 		prog_id	= prog_id(sort_ind)
 		IF(N_ELEMENTS(prog_id) GT N_ELEMENTS(plist_mass(0,*))) THEN BEGIN

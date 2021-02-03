@@ -43,6 +43,7 @@ PRO read_vraptor, settings, n_snap
 	void	= rv_ReadID	(settings, ' ', ' ', run=0L)
 	void	= rv_PTMatch	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_GProp	(settings, ' ', ' ', 1L, run=0L)
+	rv_save, settings, ' ', 1L, run=0L
 
 	;;-----
 	;; Path Settings
@@ -90,6 +91,13 @@ PRO read_vraptor, settings, n_snap
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Galaxy Property...', /bef
 	data.rv_gprop	= rv_GProp(settings, dir_data, data, $
 		n_snap, run=settings.P_VRrun_step(4))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+
+	;;-----
+	;; HDF5 output
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'HDF5 Saving...', /bef
+	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(5)
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 	STOP
 
@@ -157,33 +165,6 @@ PRO read_vraptor, settings, n_snap
 
 
 
-	;;-----
-	;; Galaxy Property
-	;;-----
-	;if KEYWORD_SET(verbose) then tic
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Galaxy Property         '
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
-	;if strlen(file_search(dir_snap + 'rv_gprop.sav')) lt 5L or KEYWORD_SET(rv_gprop) then begin
-	;	if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-	;	if ~KEYWORD_SET(num_thread) then SPWAN, 'nproc --all', num_thread
-	;	if ~KEYWORD_SET(num_thread) then num_tread = long(num_thread)
-
-	;	rv_gprop, output, output2, dir_snap=dir_snap, dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-	;		horg=horg, num_thread=num_thread, n_snap=n_snap, flux_list=flux_list, $
-	;		SFR_T=SFR_t, SFR_R=SFR_R, MAG_R=MAG_R, skip=KEYWORD_SET(skip_gprop)
-
-	;	save, filename=dir_snap + 'rv_gprop.sav', output2
-	;endif else begin
-	;        restore, dir_snap + 'rv_gprop.sav'
-	;endelse
-	;output	= rv_makestr(output2, output=output)
-	;if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then PRINT, ' '
-	;if KEYWORD_SET(verbose) then toc, /verbose
 
 	;;-----
 	;; HDF5 output

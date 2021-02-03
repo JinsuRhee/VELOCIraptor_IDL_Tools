@@ -1,6 +1,4 @@
 FUNCTION rv_RawCatalog, settings, dir_data, run=run
-;, column_list=column_list, silent=silent, skip=skip 
-
 ;;-----
 ;; Check procedure set
 ;;-----

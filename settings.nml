@@ -1,65 +1,94 @@
 ##-----
-## Path Settings
-##	* Path for the directories
-##		dir_raw	= where/is/ramses/rawdata/files
-##		dir_catalog = where/is/output/files/of/VR
-##		dir_save = where/to/save/the/final/hdf5/files
-##
-##		dir_catalog_pre = prefix for the catalog directories (default = snap_)
-##		dir_catalog_suf = suffix for the catalog directories (default = )
-##	* You can simply make alias for the path for the directories by choosing the simul-name
-##-----
-
-#dir_raw=''
-#dir_catalog=''
-#dir_save=''
-
-dir_catalog_pre	= 'snap_'
-dir_catalog_suf = ''
-
-simname	= 'NH'
-cname	= 'NH'
-
-#simname	= 'YZiCS2'
-#cname		= 'l10006'
-#cname		= 'c10006'
-#cname		= 'c03770'
-
-#simname= 'YZiCS'
-#cname	= '49096'
-
-##-----
 ## General Settings
-##	num_thread	= how many cores you want to use
 ##-----
-num_thread	= 20L
+num_thread	= 15L
+horg	= 'g'		;; Halo or Galaxy
+verbose	= 1L
+
+# effective resolution equal to the one in the configuration file
+effective_resolution	= 4096
 
 ##-----
-## Data Settings
-##	column_list = ['list', 'of', 'data', 'that', 'you', 'want to', 'extract from the catalog', 'or read in the .hdf5']
-##	flux_list = ['list', 'of', 'flux']
-##		! currently, only SDSS bands are available
+## RAMSES Related
 ##-----
-column_list	= ['ID', 'ID_mbp', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_200crit', 'R_size', 'R_200crit', 'R_HalfMass', 'Rvir', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'npart']
+# Particle Format
+# 	0L - org ver
+# 	1L - new ver (use family)
+R_orgver	= 0L
+
+# Particle ID type
+# 	0L - long Int
+# 	1L - long long int
+R_longint	= 0L
+
+##-----
+## Path Settings
+##-----
+# Dir where VR output located
+dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
+	dir_catalog_pre = 'snap_'
+	dir_catalog_suf = ''
+
+# Dir where TF output located
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/'
+
+# Dir where RAMSES raw data located
+dir_raw		= '/storage6/NewHorizon/'
+
+# Dir where HDF5 results are saved
+# 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
+dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
+
+##-----
+## DATA Settings
+##-----
+#	Column list from the raw catalog
+column_list	= ['ID', 'ID_mbp', 'numSubStruct', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Efrac', 'Mass_200crit', 'Rvir', 'R_size', 'R_200mean', 'R_200crit', 'R_HalfMass', 'R_HalfMass_200mean', 'R_HalfMass_200crit', 'Rmax', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'Vmax', 'npart']
+
+#	Flux List
+#		Mag_r - Aperture size in Rhalfmass unit for measuring magnitude
+#flux_list       = ['u', 'g', 'r', 'i', 'z', 'FUV', 'NUV', 'IR_F105W', 'IR_F125W', 'IR_F160W']
 flux_list       = ['u', 'g', 'r', 'i', 'z']
+Mag_r= [-1.0, 0.1, 1.0]
 
+#	SFR-related options
+#		SFR_t - Time range for measuring SFR in Gyr
+#		SFR_r - aperture size in Rhalfmass unit (-1 means total)
+SFR_t= [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 1.00, 1.00, 1.00]
+SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00]
+#						;; _r = aperture cut (negative value indicates total)
 ##-----
-## Procedure Settings
-##	* 1 - on // others - off
-##			read the catalog files, match them with the raw data, measure some properties, and save the final data
+## Procedure
 ##-----
-	P_VRrun_snap = [780L, 780L, 1L]		;;-- Snapshot Range, Interval
-	#P_VRrun_step = ['rv_raw', 'rv_id', 'rv_tree', 'rv_match', 'rv_gprop', 'rv_save']
-	P_VRrun_step = ['rv_tree', 'rv_match', 'rv_gprop', 'rv_save']
-	#P_VRrun_skip = ['skip_tree', 'skip_id', 'skip_match', 'skip_gprop']
-	P_VRrun_skip = ['skip_tree']
+
+# Snapshot range setting
+# 	[N0, N1, DN]
+P_VRrun_snap = [031L, 031L, 1L]		;;-- Snapshot Range, Interval
+
+# Run Procedure
+#	0	- Skip the procedure (values are filled with dummy values)
+#	1	- Soft Run (if there is pre-run data, just load the result)
+#	2	- Force Run (run the procedure and overlap the pre-run data)
+#
+#	[read raw data, read tree, read ID, ID matching, Compute Galaxy Prop, Save the data]
+P_VRrun_step = [1L, 2L, 1L, 1L, 1L, 2L]
+
+
+
+
+
+P_VRrun_skip = ['skip_id', 'skip_match', 'skip_gprop']
+	#P_VRrun_skip = ['skip_tree']
 	#P_VRrun_skip = [' ']
 	P_VRrun_horg = 'g'
-	P_VRrun_SFR_t= [0.1, 0.1, 1.0, 1.0]	;;-- SFR Measurement Setting --
-	P_VRrun_SFR_r= [-1.0, 1.0, -1.0, 1.0]	;; _t = time interval in Gyr
+	P_VRrun_SFR_t= [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 1.00, 1.00, 1.00]	;;-- SFR Measurement Setting --
+	P_VRrun_SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00]	;; _t = time interval in Gyr
 #						;; _r = aperture cut (negative value indicates total)
-	P_VRrun_mag_r= [-1.0, 1.0]		;;-- Magnitude Measurement SEtting --
+	P_VRrun_mag_r= [-1.0, 0.1, 1.0]		;;-- Magnitude Measurement SEtting --
 #						;; _r = aperture cut (negative value indicates total)
+
+P_TFrun		= 2L
+
 
 ##-----
 ## LIST OF CALL FUNCTIONS
@@ -70,13 +99,3 @@ flux_list       = ['u', 'g', 'r', 'i', 'z']
 ##
 ##	get_flux.pro
 ##		= get_flux(mass (solar), metal, gyr, 
-##
-##	f_getevol.pro
-##
-##	f_getfinaldes.pro
-##
-##	f_rdamr.pro
-##
-##	f_rdgal.pro
-##
-##	f_rdptcl.pro
