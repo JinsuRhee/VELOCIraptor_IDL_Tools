@@ -13,28 +13,26 @@ void rv_match(int argc, void *argv[])
 {
   extern void rv_match_();   /* FORTRAN routine */
   long long *id;
-  long *ind_b, *ind_u;
   double *xp, *vp, *zp, *ap, *mp;
-  long *dom_list;
   float *rate;
 
   STRING *dir_raw;
-  int *larr;
+  int *larr, *ind_b, *ind_u, *dom_list;
   double *darr;
 
   larr		= (int *) argv[0];
   darr		= (double *) argv[1];
   dir_raw	= (STRING *) argv[2];
   id		= (long long *) argv[3];
-  ind_b		= (long *) argv[4];
-  ind_u		= (long *) argv[5];
+  ind_b		= (int *) argv[4];
+  ind_u		= (int *) argv[5];
   xp		= (double *) argv[6];
   vp		= (double *) argv[7];
   zp		= (double *) argv[8];
   ap		= (double *) argv[9];
   mp		= (double *) argv[10];
   rate		= (float *) argv[11];
-  dom_list	= (long *) argv[12];
+  dom_list	= (int *) argv[12];
 
   //const rlim_t kStackSize = 64L * 1024L * 1024L;   // min stack size = 64 Mb
   //struct rlimit rl;

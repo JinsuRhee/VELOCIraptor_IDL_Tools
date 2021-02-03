@@ -99,109 +99,18 @@ PRO read_vraptor, settings, n_snap
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'HDF5 Saving...', /bef
 	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(5)
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
-	STOP
-
-
-;+)
-;
-;	dir_catalog:
-;		Directory WHERE catalogs are located
-;
-;	dir_raw
-;		Directory WHERE the raw data are located
-;
-;	dir_lib
-;		Directory WHERE the IDL & RAMSES library exist
-;
-;	dir_save
-;		Directory WHERE HDF5 files are saved
-;
-;
-;	column_list:
-;		List of columns of properteis to extract
-;
-;	
-;
-;-)
-	;;-----
-	;; Keyword setting
-	;;-----
-
-	;if KEYWORD_SET(halo) then horg='h'
-	;if KEYWORD_SET(galaxy) then horg='g'
-	if ~KEYWORD_SET(halo) and ~KEYWORD_SET(galaxy) then PRINT, '	***** Determine whether to read galaxy or halo (e.g., /halo or /galaxy)'
-	if ~KEYWORD_SET(halo) and ~KEYWORD_SET(galaxy) then STOP
-
-	;;-----
-	;; Default setting
-	;;-----
-	dir_snap= dir_catalog
-
-
-
-
-	;;-----
-	;; Apply the mass limit
-	;;-----
-	if KEYWORD_SET(mrange) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% Applying the mass cut     '
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-		mcut	= WHERE(output.mvir lt mrange(1) and output.mvir gt mrange(0))
-		if MAX(mcut) lt 0L then PRINT, '     %%%%% (No galaxies existed in the mass range)'
-		if MAX(mcut) lt 0L then STOP
-
-		for i=0L, N_TAGS(output)-1L do begin
-			if i eq 0L then output2 = create_struct(data_list(i), output.(i)(mcut))
-			if i ge 1L then output2 = create_struct(output2, data_list(i), output.(i)(mcut))
-		endfor
-
-		output = output2
-		output2 = 0.
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done                      '
-		if KEYWORD_SET(verbose) then PRINT, ' '
-		if KEYWORD_SET(verbose) then PRINT, ' '
-	endif
-
-
-
-
-	;;-----
-	;; HDF5 output
-	;;-----
-	if KEYWORD_SET(verbose) then tic
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% HDF5 Saving	             '
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%%                           '
-
-	if KEYWORD_SET(rv_save) then begin
-		if KEYWORD_SET(verbose) then PRINT, '        %%%%% (No previous works are found)'
-
-		if ~KEYWORD_SET(num_thread) then SPWAN, 'nproc --all', num_thread
-		if ~KEYWORD_SET(num_thread) then num_tread = long(num_thread)
-
-		rv_save, output, dir_save=dir_save, horg=horg, num_thread=num_thread, n_snap=n_snap, column_list=column_list, flux_list=flux_list, skip=KEYWORD_SET(skip_save)
-	endif
-	if KEYWORD_SET(verbose) then PRINT, '        %%%%% Done in                      '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then PRINT, ' '
-	if KEYWORD_SET(verbose) then toc, /verbose
-
-	;RETURN, output
-	STOP
-
 
 	;;-----
 	;; All DTypes
 	;;-----
-	if KEYWORD_SET(alltype) then output = create_struct(output, 'all', dtag)
+	;if KEYWORD_SET(alltype) then output = create_struct(output, 'all', dtag)
 
 	;;-----
 	;; Nan?
 	;;-----
-	tagnm	= TAG_NAMES(output)
-	for i=0L, N_TAGS(output)-1L do begin
-		tmp	= FINITE(output.(i),/nan)
+	tagnm	= TAG_NAMES(*data.rv_raw)
+	for i=0L, N_TAGS(*data.rv_raw)-1L do begin
+		tmp	= FINITE((*data.rv_raw).(i),/nan)
 		if MAX(WHERE(tmp eq 1L) ge 0L) then $
 		  PRINT, '***** read_vraptor.pro: There is a Nan value in the arrays ( ' + strtrim(tagnm(i),2) + ' )'
 	endfor

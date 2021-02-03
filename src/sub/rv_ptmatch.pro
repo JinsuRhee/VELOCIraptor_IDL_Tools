@@ -186,6 +186,7 @@ IF run EQ 2L THEN BEGIN
 		void	= WHERE(rate LT match_cutval, leftgal)
 		PRINT, "%     Done. Left Galaxies are ", leftgal
 		PRINT, "%123123 ----------"
+
 		IF leftgal EQ 0L THEN N_itr = N_itrmax
 	ENDREP UNTIL N_itr GE N_itrmax
 

@@ -2,7 +2,7 @@ FUNCTION rv_ReadTree, settings, dir_data, data, n_snap, run=run
 ;;-----
 ;; Check procedure set
 ;;-----
-IF run EQ 0L THEN RETURN, PTR_NEW({progs:-1},/no_copy)
+IF run EQ 0L THEN RETURN, PTR_NEW({progs:-1, progs_merit:-1},/no_copy)
 IF run EQ 1L THEN BEGIN
 	IF STRLEN(FILE_SEARCH(dir_data + 'rv_tree.sav')) GE 5L THEN BEGIN
 		RESTORE, dir_data + 'rv_tree.sav'
@@ -32,7 +32,7 @@ IF run EQ 2L THEN BEGIN
 
 	;;----- Skip the first snapshot
 	IF snapind EQ 0L THEN $
-		RETURN, PTR_NEW({progs:-1},/no_copy)
+		RETURN, PTR_NEW({progs:-1, progs_merit:-1},/no_copy)
 
 	str	= snapind + snaplist(0)
 	str	= STRING(str, format='(I4.4)')

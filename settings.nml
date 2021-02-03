@@ -1,7 +1,7 @@
 ##-----
 ## General Settings
 ##-----
-num_thread	= 15L
+num_thread	= 40L
 horg	= 'g'		;; Halo or Galaxy
 verbose	= 1L
 
@@ -63,7 +63,7 @@ SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, 
 
 # Snapshot range setting
 # 	[N0, N1, DN]
-P_VRrun_snap = [031L, 031L, 1L]		;;-- Snapshot Range, Interval
+P_VRrun_snap = [115L, 200L, 1L]		;;-- Snapshot Range, Interval
 
 # Run Procedure
 #	0	- Skip the procedure (values are filled with dummy values)
@@ -71,23 +71,7 @@ P_VRrun_snap = [031L, 031L, 1L]		;;-- Snapshot Range, Interval
 #	2	- Force Run (run the procedure and overlap the pre-run data)
 #
 #	[read raw data, read tree, read ID, ID matching, Compute Galaxy Prop, Save the data]
-P_VRrun_step = [1L, 2L, 1L, 1L, 1L, 2L]
-
-
-
-
-
-P_VRrun_skip = ['skip_id', 'skip_match', 'skip_gprop']
-	#P_VRrun_skip = ['skip_tree']
-	#P_VRrun_skip = [' ']
-	P_VRrun_horg = 'g'
-	P_VRrun_SFR_t= [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 1.00, 1.00, 1.00]	;;-- SFR Measurement Setting --
-	P_VRrun_SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00]	;; _t = time interval in Gyr
-#						;; _r = aperture cut (negative value indicates total)
-	P_VRrun_mag_r= [-1.0, 0.1, 1.0]		;;-- Magnitude Measurement SEtting --
-#						;; _r = aperture cut (negative value indicates total)
-
-P_TFrun		= 2L
+P_VRrun_step = [1L, 1L, 0L, 0L, 0L, 0L]
 
 
 ##-----
