@@ -3,7 +3,7 @@
 #gcc -shared -fopenmp match.o match_c2f.o -o match.so
 
 #gfortran -fopenmp -fPIC -fcheck=all -mcmodel=large -c rv_match.f90 -o rv_match.o
-gfortran -fopenmp -fPIC -mcmodel=large -c rv_match.f90 -o rv_match.o
+gfortran -fopenmp -fPIC -mcmodel=large -fno-range-check -c rv_match.f90 -o rv_match.o
 gcc -fopenmp -fPIC -mcmodel=large -c rv_match_c2f.c -o rv_match_c2f.o
 gcc -shared -fopenmp rv_match.o rv_match_c2f.o -o rv_match.so -lgfortran
 #gcc -shared -fopenmp -fcheck=all rv_match.o rv_match_c2f.o -o rv_match.so -lgfortran

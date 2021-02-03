@@ -2,7 +2,7 @@ FUNCTION f_rdgal, settings, n_snap, Gprop, mrange=mrange, id=id, bound=bound, di
 
 	IF ~KEYWORD_SET(dir) THEN $
 		dir	= Settings.dir_save + $
-		'VR_Galaxy/snap_' + string(n_snap,format='(I3.3)') + '/'
+		'snap_' + string(n_snap,format='(I3.3)') + '/'
 
 	flist	= file_search(dir + 'GAL_*')
 	IF KEYWORD_SET(id) THEN flist = file_search(dir + 'GAL_' + STRING(id,format='(I6.6)') + '.hdf5')
