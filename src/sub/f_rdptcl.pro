@@ -2,7 +2,7 @@ FUNCTION f_rdptcl, settings, gid, $
 	p_pos=p_pos, p_vel=p_vel, p_gyr=p_gyr, p_sfactor=p_sfactor, $
 	p_mass=p_mass, p_flux=p_flux, p_metal=p_metal, $
 	flux_list=flux_list, $
-	num_thread=num_thread, n_snap=n_snap, longint=longint, raw=raw, alldom=alldom, $
+	n_snap=n_snap, longint=longint, raw=raw, alldom=alldom, $
 	boxrange=boxrange, dir=dir, $
 	yzics=yzics, nh=nh
 
@@ -10,13 +10,12 @@ FUNCTION f_rdptcl, settings, gid, $
 	;; Settings
 	;;-----
 	dir_lib = settings.dir_lib & dir_raw = settings.dir_raw & dir_save = settings.dir_save
-	simname	= settings.simname
 
 	;;-----
 	;; Read Particle IDs & Domain & Center & Radius
 	;;-----
 	IF ~KEYWORD_SET(dir) THEN $
-		dir	= dir_save + 'VR_Galaxy/snap_' + string(n_snap,format='(I3.3)') + '/'
+		dir	= dir_save + 'VR_Galaxy/snap_' + string(n_snap,format='(I4.4)') + '/'
 	
 	fname	= dir + 'GAL_' + string(gid,format='(I6.6)') + '.hdf5'
 
@@ -67,7 +66,7 @@ FUNCTION f_rdptcl, settings, gid, $
 			larr(0) = n_ptcl
 			larr(1) = n_elements(dlist)
 			larr(2) = n_snap
-			larr(3)	= num_thread
+			larr(3)	= settings.num_thread
 			larr(10)= strlen(dir_raw)
 			IF KEYWORD_SET(yzics) THEN larr(18) = 100L
 			IF KEYWORD_SET(nh) THEN larr(18) = 100L
@@ -82,7 +81,7 @@ FUNCTION f_rdptcl, settings, gid, $
 			larr = LONARR(20) & darr = DBLARR(20)
 			larr(0) = N_ELEMENTS(xc)
 			larr(1) = N_ELEMENTS(dom_list2)
-			larr(2) = num_thread
+			larr(2) = settings.num_thread
 
 			darr(0) = 50.
 			IF KEYWORD_SET(boxrange) THEN darr(0) = boxrange / (Rsize * siminfo.unit_l / 3.086d21)
@@ -112,7 +111,7 @@ FUNCTION f_rdptcl, settings, gid, $
 			larr(0) = nbody
 			larr(1) = n_elements(dlist)
 			larr(2) = n_snap
-			larr(3)	= num_thread
+			larr(3)	= settings.num_thread
 			larr(10)= strlen(dir_raw)
 			larr(17)	= 100L
 			IF KEYWORD_SET(yzics) THEN larr(18) = 100L
@@ -146,8 +145,8 @@ FUNCTION f_rdptcl, settings, gid, $
 	IF KEYWORD_SET(p_mass) THEN $
 		output = create_struct(output, 'mp', mp(cut,*))
 
-	dummy   = get_gyr(pinfo(*,7), dir_raw=dir_raw, dir_lib=dir_lib, simname=simname, $
-		num_thread=num_thread, n_snap=n_snap)
+	dummy   = get_gyr(pinfo(*,7), dir_raw=dir_raw, dir_lib=dir_lib, $
+		num_thread=settings.num_thread, n_snap=n_snap)
 	IF KEYWORD_SET(p_gyr) OR KEYWORD_SET(p_sfactor) THEN BEGIN
 		IF KEYWORD_SET(p_gyr) THEN $
 			output = create_struct(output, 'GYR', dummy(cut,1))
@@ -162,7 +161,7 @@ FUNCTION f_rdptcl, settings, gid, $
 	IF KEYWORD_SET(p_flux) THEN BEGIN
 		FOR i=0L, n_band - 1L DO BEGIN
 			dummy2	= get_flux(mp, zp, dummy(*,1), $
-				lib=dir_lib, band=flux_list(i), num_thread=num_thread)
+				lib=dir_lib, band=flux_list(i), num_thread=settings.num_thread)
 
 			output = create_struct(output, 'F_' + flux_list(i), dummy2(cut))
 		ENDFOR
