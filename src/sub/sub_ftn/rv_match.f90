@@ -368,14 +368,14 @@
 
 !!!!!! Local Variables
       integer(kind=4) i, j, k, l, di
-      integer(kind=4) ind0, ind1, mi
+      integer(kind=4) ind0, ind1, mi, tid
       integer(kind=4) n_thread
       integer(kind=4) n_rep, n_test1, n_test2
       integer(kind=8), dimension(:), allocatable :: ind, id_rep
       !integer(kind=4) ind(larr(5))
       !integer(kind=8) id_rep(larr(5))
       logical gal_ch
-
+        tid = matchok
       n_test1 = matchok
       n_test2 = 0
       matchok = -1
@@ -396,7 +396,7 @@
             IF(gal_id(i,1) .GT. raw_id(l)) ind0 = l
             IF(gal_id(i,1) .LT. raw_id(l)) ind1 = l
             IF(gal_id(i,1) .EQ. raw_id(l)) THEN
-             ind0 = 1; ind1 = 1; mi = l
+             ind0 = l; ind1 = l; mi = l
             ENDIF
           ENDDO
 
@@ -416,8 +416,12 @@
             matchok = 1
             n_test2 = n_test2 + 1
           ENDIF
-
         ENDIF
+
+        !IF(gal_id(i,1) .EQ. 37827512) THEN
+        !  PRINT *, mi, ind0, ind1
+        !  STOP
+        !ENDIF
       ENDDO
 
       !IF(n_test2 .GT. 0) PRINT *, n_test1, ' / ', n_test2
@@ -821,7 +825,6 @@
 !!!!! Local variables
       Character*(100) fname, snap, domnum
       Integer(kind=4) uout, nbody
-
       uout      = 100 + threadnum
 
       write(snap, '(I5.5)') n_snap
