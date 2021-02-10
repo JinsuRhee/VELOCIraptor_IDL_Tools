@@ -31,7 +31,7 @@ FUNCTION get_sfr, $
 
 	FOR i=0L, n_sfr - 1L DO BEGIN
 		darr(0) = double(SFR_R(i))
-		darr(1)	= double(SFR_t(i))
+		darr(10)= double(SFR_t(i))
 
 		dummy	= dblarr(n_gal)
 
