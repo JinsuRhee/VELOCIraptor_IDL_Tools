@@ -17,31 +17,27 @@ IF run EQ 2L THEN BEGIN
 	;;-----
 	;; Find Snapshot Index
 	;;-----
-	OPENR, 10, settings.dir_tree + 'tree.snaplist.txt'
-	str	= ' '
+	treelist	= FILE_SEARCH(settings.dir_tree + 'tree.snapshot_*.tree')
 
-	snaplist= LONARR(FILE_LINES(settings.dir_tree + 'tree.snaplist.txt'))
-	snapind = -1L
-	FOR i=0L, FILE_LINES(settings.dir_tree + 'tree.snaplist.txt')-1L DO BEGIN
-		READF, 10, str
-		dum	= STRPOS(str, 'snap_')
-		snaplist(i)	= LONG(STRMID(str, dum+5, 4))
-		IF snaplist(i) EQ n_snap THEN snapind = i
+	numsnap_pr	= 0L
+	FOR i=0L, N_ELEMENTS(treelist)-1L DO BEGIN
+		dum	= STRPOS(treelist(i), 'snapshot_')
+		numsnap	= LONG(STRMID(treelist(i), dum+9, 4))
+		IF numsnap EQ n_snap THEN BEGIN
+			snapind = i
+			BREAK
+		ENDIF
+		numsnap_pr	= numsnap
 	ENDFOR
-	CLOSE, 10
 
 	;;----- Skip the first snapshot
 	IF snapind EQ 0L THEN $
 		RETURN, PTR_NEW({progs:-1, progs_merit:-1},/no_copy)
 
-	str	= snapind + snaplist(0)
-	str	= STRING(str, format='(I4.4)')
-
 	;;-----
 	;; I/O
 	;;-----
-	fname	= settings.dir_tree + 'tree.snapshot_' + str + $
-		'.VELOCIraptor.tree'
+	fname	= treelist(snapind)
 
 	;;-----
 	;; READ HDF
@@ -70,7 +66,7 @@ IF run EQ 2L THEN BEGIN
 	;; READ PREVIOUS SNAPDATA
 	;;-----
 	dum	= settings.dir_catalog + settings.dir_catalog_pre + $
-		STRING(snaplist(snapind-1L),format='(I4.4)') + $
+		STRING(numsnap_pr,format='(I4.4)') + $
 		settings.dir_catalog_suf + '/'
 	ptr_pre	= rv_RawCatalog(settings, dum, run=1L)
 
