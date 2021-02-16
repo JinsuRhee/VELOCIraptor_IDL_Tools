@@ -65,9 +65,14 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
 		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).progs_merit) GE 2L THEN $
-			Progs = (*data.rv_tree).progs_merit(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Progs', 		fid
+		IF N_ELEMENTS((*data.rv_tree).progs_bymerit) GE 2L THEN $
+			Progs = (*data.rv_tree).progs_bymerit(i,*)
+		simple_write_hdf5, progs, 'G_Prop/Progs_bymerit', 	fid
+
+		Progs = -1L
+		IF N_ELEMENTS((*data.rv_tree).progs_bymass) GE 2L THEN $
+			Progs = (*data.rv_tree).progs_bymass(i,*)
+		simple_write_hdf5, progs, 'G_Prop/Progs_bymass', 	fid
 		;;----- Wirte # of Ptcls
 		;simple_write_hdf5, n_bdn, 'P_NumB', fid
 		;simple_write_hdf5, n_ubd, 'P_NumU', fid
