@@ -94,17 +94,21 @@ IF run EQ 2L THEN BEGIN
 
 		;PRINT, 'modify the way of finding progenitor by using merit'
 		;STOP
-		sort_ind= REVERSE(SORT(mass_dum))
-		prog_id	= prog_id(sort_ind)
-		IF(N_ELEMENTS(prog_id) GT N_ELEMENTS(plist_mass(0,*))) THEN BEGIN
-			prog_id	= prog_id(0L:N_ELEMENTS(plist_mass(0,*))-1L)
-			prog_mr = prog_mr(0L:N_ELEMENTS(plist_mass(0,*))-1L)
-		ENDIF
-		plist_mass(i,0:N_ELEMENTS(prog_id)-1L)	= prog_id
-		plist_merit(i,0:N_ELEMENTS(prog_id)-1L)	= prog_mr
+		mass_ind	= REVERSE(SORT(mass_dum))
+		merit_ind	= REVERSE(SORT(prog_mr))
+
+		prog_id_bymass	= prog_id(mass_ind)
+		prog_id_bymerit	= prog_id(merit_ind)
+
+		endind	= N_ELEMENTS(prog_id) < N_ELEMENTS(plist_mass(0,*))
+		prog_id_bymass	= prog_id_bymass(0L:endind-1L)
+		prog_id_bymerit	= prog_id_bymerit(0L:endind-1L)
+
+		plist_mass(i,0:endind-1L)	= prog_id_bymass
+		plist_merit(i,0:endind-1L)	= prog_id_bymerit
 	ENDFOR
 
-	output	= {progs:plist_mass, progs_merit:plist_merit}
+	output	= {progs_bymass:plist_mass, progs_bymerit:plist_merit}
 	SAVE, filename=dir_data + 'rv_tree.sav', output
 	RETURN, PTR_NEW(output,/no_copy)
 ENDIF
