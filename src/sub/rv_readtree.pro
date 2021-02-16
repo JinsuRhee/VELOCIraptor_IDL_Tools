@@ -32,7 +32,7 @@ IF run EQ 2L THEN BEGIN
 
 	;;----- Skip the first snapshot
 	IF snapind EQ 0L THEN $
-		RETURN, PTR_NEW({progs:-1, progs_merit:-1},/no_copy)
+		RETURN, PTR_NEW({progs_bymass:-1, progs_bymerit:-1},/no_copy)
 
 	;;-----
 	;; I/O
