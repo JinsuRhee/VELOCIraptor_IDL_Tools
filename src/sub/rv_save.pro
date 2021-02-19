@@ -73,6 +73,17 @@ IF run EQ 0L THEN RETURN
 		IF N_ELEMENTS((*data.rv_tree).progs_bymass) GE 2L THEN $
 			Progs = (*data.rv_tree).progs_bymass(i,*)
 		simple_write_hdf5, progs, 'G_Prop/Progs_bymass', 	fid
+
+		Desc	= -1L
+		IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
+			Desc	= (*data.rv_tree).desc_bymass(i)
+		simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
+		
+		Desc	= -1L
+		IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
+			Desc	= (*data.rv_tree).desc_bymerit(i)
+		simple_write_hdf5, desc, 'G_Prop/Desc_bymerit', fid
+
 		;;----- Wirte # of Ptcls
 		;simple_write_hdf5, n_bdn, 'P_NumB', fid
 		;simple_write_hdf5, n_ubd, 'P_NumU', fid
