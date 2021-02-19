@@ -121,7 +121,8 @@ FUNCTION rv_ReadTree, settings, dir_data, data, n_snap, run=run
 ;;-----
 ;; Check procedure set
 ;;-----
-IF run EQ 0L THEN RETURN, PTR_NEW({progs:-1, progs_merit:-1},/no_copy)
+IF run EQ 0L THEN RETURN, PTR_NEW({prog_bymass:-1, prog_bymerit:-1, $
+	desc_bymass:-1, desc_bymerit:-1},/no_copy)
 IF run EQ 1L THEN BEGIN
 	IF STRLEN(FILE_SEARCH(dir_data + 'rv_tree.sav')) GE 5L THEN BEGIN
 		RESTORE, dir_data + 'rv_tree.sav'
@@ -191,8 +192,8 @@ IF run EQ 2L THEN BEGIN
 	;;-----
 	desc_bymass	= LONARR(N_ELEMENTS((*data.rv_raw).id)) - 1L
 	desc_bymerit	= LONARR(N_ELEMENTS((*data.rv_raw).id)) - 1L
-	progs_bymass	= LONARR(N_ELEMENTS((*data.rv_raw).id),10) - 1L
-	progs_bymerit	= LONARR(N_ELEMENTS((*data.rv_raw).id),10) - 1L
+	prog_bymass	= LONARR(N_ELEMENTS((*data.rv_raw).id),10) - 1L
+	prog_bymerit	= LONARR(N_ELEMENTS((*data.rv_raw).id),10) - 1L
 
 	IF settings.treedir EQ 'prg' THEN BEGIN
 		tree_num	= 'NumProgen'
@@ -218,7 +219,7 @@ IF run EQ 2L THEN BEGIN
 			treedum	= rv_readtree_rdhdf5(treelist(snap_prg), $
 				tree_num, tree_off, tree_result, tree_merit)
 			rv_readtree_matrixmatch, treedum, *ptr_prg, *data.rv_raw, $
-				progs_bymass, progs_bymerit
+				prog_bymass, prog_bymerit
 		ENDIF
 	ENDIF
 
@@ -237,7 +238,7 @@ IF run EQ 2L THEN BEGIN
 		ENDIF
 	ENDIF
 
-	output	= {progs_bymass:progs_bymass, progs_bymerit:progs_bymerit, $
+	output	= {prog_bymass:prog_bymass, prog_bymerit:prog_bymerit, $
 		desc_bymass:desc_bymass, desc_bymerit:desc_bymerit}
 
 	SAVE, filename=dir_data + 'rv_tree.sav', output
