@@ -68,17 +68,20 @@ PRO rv_ReadTree_matrixmatch, reftree, ref, target, m_bymass, m_bymerit
 	FOR i=0L, n_tar-1L DO BEGIN
 		dum_mass	= mat_mass(*,i)
 		dum_merit	= mat_merit(*,i)
+		cut	= WHERE(dum_mass GT 0., ncut)
+		IF ncut EQ 0L THEN CONTINUE
+		dum_merit = dum_merit(cut) & dum_mass = dum_mass(cut) & dum_id = ref.id(cut)
 
 		sind_mass	= REVERSE(SORT(dum_mass))
 		sind_merit	= REVERSE(SORT(dum_merit))
 
-		id_mass		= ref.id(sind_mass)
-		id_merit	= ref.id(sind_merit)
+		id_mass	= dum_id(sind_mass)
+		id_merit= dum_id(sind_merit)
+		endind	= n_candi < N_ELEMENTS(dum_id)
 
-		m_bymass(i,*)	= id_mass(0L:n_candi-1L)
-		m_bymerit(i,*)	= id_merit(0L:n_candi-1L)
+		m_bymass(i,0L:endind-1L)	= id_mass(0L:endind-1L)
+		m_bymerit(i,0L:endind-1L)	= id_merit(0L:endind-1L)
 	ENDFOR
-
 END
 
 ;;-----
@@ -211,7 +214,6 @@ IF run EQ 2L THEN BEGIN
 			rv_readtree_normalmatch, desc_bymass, desc_bymerit, $
 				treedum, *ptr_des
 		ENDIF
-
 		IF snap_prg GE 0L THEN BEGIN
 			treedum	= rv_readtree_rdhdf5(treelist(snap_prg), $
 				tree_num, tree_off, tree_result, tree_merit)
@@ -236,7 +238,7 @@ IF run EQ 2L THEN BEGIN
 	ENDIF
 
 	output	= {progs_bymass:progs_bymass, progs_bymerit:progs_bymerit, $
-		desc_bymass:desc_bymass, desc_bymerit}
+		desc_bymass:desc_bymass, desc_bymerit:desc_bymerit}
 
 	SAVE, filename=dir_data + 'rv_tree.sav', output
 	RETURN, PTR_NEW(output,/no_copy)
