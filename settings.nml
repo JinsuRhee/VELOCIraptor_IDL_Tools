@@ -37,7 +37,7 @@ dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/link1test/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/'
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/'
 
 # Dir where RAMSES raw data located
@@ -65,6 +65,12 @@ Mag_r= [-1.0, 0.1, 1.0]
 SFR_t= [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 1.00, 1.00, 1.00]
 SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00]
 #						;; _r = aperture cut (negative value indicates total)
+
+#	Clump-Find options
+#		Currently, clump is an object of which X of their mass is formed within in a short time
+#		That is, if SFR > mass / SFR timebin * X
+clump_mfrac	= 0.5
+
 ##-----
 ## Procedure
 ##-----
@@ -72,7 +78,7 @@ SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, 
 # Snapshot range setting
 # 	[N0, N1, DN]
 #P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [951, 959, 1L]
+P_VRrun_snap = [900, 900, 1L]
 
 # Run Procedure
 #	0	- Skip the procedure (values are filled with dummy values)
