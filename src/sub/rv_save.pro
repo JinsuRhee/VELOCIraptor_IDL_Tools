@@ -113,7 +113,7 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
 
 		;;-----Write clump data
-		simple_write_hdf5, data.isclump, 'isclump',	fid
+		simple_write_hdf5, data.isclump(i), 'isclump',	fid
 		;;----- Close the HDF5 file
 		h5f_close, fid
 
