@@ -29,7 +29,7 @@ IF run EQ 0L THEN RETURN
 
 	ngal	= N_ELEMENTS((*data.rv_raw).id)
 	for i=0L, ngal - 1L do begin
-		IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
+		;IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
 		ib = -1L & iu = -1L & ptcl_id = -1L
 		IF N_ELEMENTS((*data.rv_id).b_ind) GE 2 THEN BEGIN
 			ib = (*data.rv_id).b_ind(i,*) & iu = (*data.rv_id).u_ind(i,*)
@@ -111,6 +111,9 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
 		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
 		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
+
+		;;-----Write clump data
+		simple_write_hdf5, data.isclump, 'isclump',	fid
 		;;----- Close the HDF5 file
 		h5f_close, fid
 
