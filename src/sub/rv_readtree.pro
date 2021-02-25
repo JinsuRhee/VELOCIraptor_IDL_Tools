@@ -78,7 +78,6 @@ PRO rv_ReadTree_matrixmatch, reftree, ref, target, m_bymass, m_bymerit
 		id_mass	= dum_id(sind_mass)
 		id_merit= dum_id(sind_merit)
 		endind	= n_candi < N_ELEMENTS(dum_id)
-
 		m_bymass(i,0L:endind-1L)	= id_mass(0L:endind-1L)
 		m_bymerit(i,0L:endind-1L)	= id_merit(0L:endind-1L)
 	ENDFOR
@@ -237,7 +236,6 @@ IF run EQ 2L THEN BEGIN
 
 		ENDIF
 	ENDIF
-
 	output	= {prog_bymass:prog_bymass, prog_bymerit:prog_bymerit, $
 		desc_bymass:desc_bymass, desc_bymerit:desc_bymerit}
 
