@@ -70,15 +70,30 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, progs, 'G_Prop/Prog_bymerit', 	fid
 
 		Progs = -1L
+		IF N_ELEMENTS((*data.rv_tree).prog_matsnap_merit) GE 2L THEN $
+			Progs = (*data.rv_tree).prog_matsnap_merit(i,*)
+		simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_merit', 	fid
+
+		Progs = -1L
 		IF N_ELEMENTS((*data.rv_tree).prog_bymass) GE 2L THEN $
 			Progs = (*data.rv_tree).prog_bymass(i,*)
 		simple_write_hdf5, progs, 'G_Prop/Prog_bymass', 	fid
+
+		Progs = -1L
+		IF N_ELEMENTS((*data.rv_tree).prog_matsnap_mass) GE 2L THEN $
+			Progs = (*data.rv_tree).prog_matsnap_mass(i,*)
+		simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_mass', 	fid
 
 		Desc	= -1L
 		IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
 			Desc	= (*data.rv_tree).desc_bymass(i)
 		simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
 		
+		Desc	= -1L
+		IF N_ELEMENTS((*data.rv_tree).desc_matsnap) GE 2L THEN $
+			Desc	= (*data.rv_tree).desc_matsnap(i)
+		simple_write_hdf5, desc, 'G_Prop/Desc_matchedsnapshot', fid
+
 		Desc	= -1L
 		IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
 			Desc	= (*data.rv_tree).desc_bymerit(i)
