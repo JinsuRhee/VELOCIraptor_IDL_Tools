@@ -110,6 +110,16 @@ PRO read_vraptor, settings, n_snap
 	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(5)
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
+
+	;;-----
+	;; CLEAR POINTER
+	;;-----
+	PTR_FREE, data.rv_raw
+	PTR_FREE, data.rv_tree
+	PTR_FREE, data.rv_id
+	PTR_FREE, data.rv_ptmatch
+	PTR_FREE, data.rv_gprop
+
 	;;-----
 	;; All DTypes
 	;;-----
