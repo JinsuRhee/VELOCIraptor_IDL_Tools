@@ -64,40 +64,41 @@ IF run EQ 0L THEN RETURN
 			SFR = (*data.rv_gprop).SFR(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
-			Progs = (*data.rv_tree).prog_bymerit(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Prog_bymerit', 	fid
+		;;----- Tree related
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymerit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymerit', 	fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).prog_matsnap_merit) GE 2L THEN $
-			Progs = (*data.rv_tree).prog_matsnap_merit(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_merit', 	fid
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_merit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_merit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_merit', 	fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).prog_bymass) GE 2L THEN $
-			Progs = (*data.rv_tree).prog_bymass(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Prog_bymass', 	fid
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymass', 	fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).prog_matsnap_mass) GE 2L THEN $
-			Progs = (*data.rv_tree).prog_matsnap_mass(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_mass', 	fid
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_mass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_mass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_mass', 	fid
 
-		Desc	= -1L
-		IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
-			Desc	= (*data.rv_tree).desc_bymass(i)
-		simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
-		
-		Desc	= -1L
-		IF N_ELEMENTS((*data.rv_tree).desc_matsnap) GE 2L THEN $
-			Desc	= (*data.rv_tree).desc_matsnap(i)
-		simple_write_hdf5, desc, 'G_Prop/Desc_matchedsnapshot', fid
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymass(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
+		;
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_matsnap) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_matsnap(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_matchedsnapshot', fid
 
-		Desc	= -1L
-		IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
-			Desc	= (*data.rv_tree).desc_bymerit(i)
-		simple_write_hdf5, desc, 'G_Prop/Desc_bymerit', fid
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymerit(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymerit', fid
 
 		;;----- Wirte # of Ptcls
 		;simple_write_hdf5, n_bdn, 'P_NumB', fid

@@ -30,7 +30,7 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	data	= {$
 		rv_raw		: PTR_NEW(1), $
-		rv_tree		: PTR_NEW(1), $
+		;rv_tree		: PTR_NEW(1), $
 		rv_id		: PTR_NEW(1), $
 		rv_ptmatch	: PTR_NEW(1), $
 		rv_gprop	: PTR_NEW(1)}
@@ -39,7 +39,7 @@ PRO read_vraptor, settings, n_snap
 	;; Compile all procedures first
 	;;-----
 	void	= rv_RawCatalog	(settings, ' ', run=0L)
-	void	= rv_ReadTree	(settings, ' ', ' ', 1L, run=0L)
+	;void	= rv_ReadTree	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_ReadID	(settings, ' ', ' ', run=0L)
 	void	= rv_PTMatch	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_GProp	(settings, ' ', ' ', 1L, run=0L)
@@ -65,10 +65,10 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	;; Read Tree
 	;;-----
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
-	data.rv_tree	= rv_ReadTree(settings, dir_data, data, $
-		n_snap, run=settings.P_VRrun_step(1))
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+	;IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
+	;data.rv_tree	= rv_ReadTree(settings, dir_data, data, $
+	;	n_snap, run=settings.P_VRrun_step(1))
+	;IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
 	;; Read Particle IDs
@@ -129,7 +129,7 @@ PRO read_vraptor, settings, n_snap
 	;; CLEAR POINTER
 	;;-----
 	PTR_FREE, data.rv_raw
-	PTR_FREE, data.rv_tree
+	;PTR_FREE, data.rv_tree
 	PTR_FREE, data.rv_id
 	PTR_FREE, data.rv_ptmatch
 	PTR_FREE, data.rv_gprop
