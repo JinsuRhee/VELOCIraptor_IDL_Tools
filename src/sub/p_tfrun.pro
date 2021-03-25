@@ -216,7 +216,8 @@ PRO p_tfrun_match, settings, treelog, tree, complete_tree, n_comp, $
 						evoldum, snap_curr, snap_next, $
 						dum_id(cut), dum_mer(cut), t_curr.ID(i)
 					treelog.n_link ++
-				ENDIF ELSE IF ABS(tree(ind).snap(0)-snap_curr) GE 10L THEN BEGIN
+				ENDIF ELSE IF ABS(tree(ind).snap(0)-snap_curr) GE 10L AND $
+					tree(ind).snap(0) NE -1L THEN BEGIN
 					;; Secondary Link
 					;;	Merit is low but has a reasonable tree length
 					p_tfrun_proglink, settings, tree, ind0, endind, n_comp, $
@@ -267,7 +268,8 @@ PRO p_tfrun_lastsnap, settings, complete_tree, n_comp, tree, evoldum, gind, g_cu
 					tree(ind).endind ++
 					tree(ind).ID(tree(ind).endind)	= g_curr.ID(i)
 					tree(ind).snap(tree(ind).endind)= snap_curr
-				ENDIF ELSE IF ABS(tree(ind).snap(0) - snap_curr) GE 10L THEN BEGIN
+				ENDIF ELSE IF ABS(tree(ind).snap(0) - snap_curr) GE 10L AND $
+					tree(ind).snap(0) NE -1L THEN BEGIN
 					;; Secondary Link
 					;;	Merit is low but has a reasonable tree length
 					p_tfrun_proglink, settings, tree, ind0, endind, n_comp, $
