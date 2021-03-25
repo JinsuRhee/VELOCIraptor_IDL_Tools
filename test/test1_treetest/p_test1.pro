@@ -1,4 +1,19 @@
 
+FUNCTION p_test1_getevol, id0, snap, ctree
+
+	FOR i=0L, N_ELEMENTS(ctree)-1L DO BEGIN
+		cut	= WHERE((*ctree(i)).snap EQ snap, ncut)
+		IF ncut EQ 0L THEN CONTINUE
+
+		IF (*ctree(i)).ID(cut) EQ id0 THEN BEGIN
+			ct	= *ctree(i)
+			RETURN, ct
+		ENDIF
+	ENDFOR
+	ct	= (*ctree(0))
+	ct.numprog	= -1L
+	RETURN, ct
+END
 PRO p_test1_findgal, settings, ctree, gal, prop
 
 	cut	= LONARR(N_ELEMENTS(ctree))-1L
@@ -290,33 +305,128 @@ PRO p_test1_drbranch, settings, ctree, gal
 	STOP
 END
 
-PRO p_test1_findoddgal, settings, gal, ctree1, ctree3, ind, range
+PRO p_test1_lencomp, settings, ctree1, ctree3, tag
 
-	cut	= WHERE(gal.mass_tot GT range(0) AND gal.mass_tot LE range(1))
-	FOR i=0L, N_ELEMENTS(cut)-1L DO BEGIN
-		in	= cut(i)
-		id	= gal.id(in)
+	gal	= f_rdgal(800L, [settings.column_list, 'SFR'], id0=-1L, dir=settings.dir_save, horg='g')
 
-		FOR j=0L, N_ELEMENTS(ctree1)-1L DO BEGIN
-			IF (*ctree1(j)).ID((*ctree1(j)).endind) EQ id AND $
-				(*ctree1(j)).snap((*ctree1(j)).endind) EQ 959L AND $
-				(*ctree1(j)).snap((*ctree1(j)).endind) - 800L GE 150L THEN BEGIN
+	len1	= DBLARR(N_ELEMENTS(gal.id))
+	len3	= len1
+	mass	= len1
+	tag	= STRARR(N_ELEMENTS(gal.id))
+	btype	= LONARR(N_ELEMENTS(gal.id),2)
+	FOR i=0L, N_ELEMENTS(gal.id)-1L DO BEGIN
+		id0	= GAL.id(i)
+		mass(i)	= GAL.mass_tot(i)
 
-				id0	= (*ctree1(j)).id(0)
-				snap0	= (*ctree1(j)).snap(0)
-				FOR k=0L, N_ELEMENTS(ctree3)-1L DO BEGIN
-					IF (*ctree3(k)).ID(0) EQ id0 AND $
-						(*ctree3(k)).snap(0) EQ snap0 THEN BEGIN;AND $
-						;(*ctree3(k)).snap((*ctree3(k)).endind) - 800L LE 20L THEN BEGIN
-						;STOP
-						PRINT, (*ctree3(k)).snap((*ctree3(k)).endind) - 800
-					ENDIF
-				ENDFOR
-			ENDIF
-		ENDFOR
+		dum1	= p_test1_getevol(id0, 800L, ctree1)
+		dum3	= p_test1_getevol(id0, 800L, ctree3)
+
+		IF dum1.numprog GE 0L THEN $
+			len1(i)	= dum1.snap(dum1.endind) - 800L
+
+		IF dum3.numprog GE 0L THEN $
+			len3(i)	= dum3.snap(dum3.endind) - 800L
+
+		btype(i,*)	= 1L
+		IF dum1.stat EQ 'sub' THEN btype(i,0) = -1L
+		IF dum3.stat EQ 'sub' THEN btype(i,1) = -1L
+
+		IF len1(i) EQ len3(i) THEN BEGIN
+			tag(i)	= 'normal'
+		ENDIF ELSE IF len1(i) GT len3(i) THEN BEGIN
+			IF len1(i) EQ 159L THEN BEGIN
+				tag(i)	= '1a'
+			ENDIF ELSE IF len3(i) EQ 0L THEN BEGIN
+				tag(i)	= '1c'
+			ENDIF ELSE BEGIN
+				tag(i)	= '1b'
+			ENDELSE
+		ENDIF ELSE BEGIN
+			IF len3(i) EQ 159L THEN BEGIN
+				tag(i)	= '2a'
+			ENDIF ELSE IF len1(i) EQ 0L THEN BEGIN
+				tag(i)	= '2c'
+			ENDIF ELSE BEGIN
+				tag(i)	= '2b'
+			ENDELSE
+		ENDELSE
 	ENDFOR
-	
+
 END
+
+;;-----
+;; Visual Map
+;;-----
+PRO p_test1_vmap, settings, ctree1, ctree3, tag
+	;;-----
+	;; Find Galaxy
+	;;-----
+	cut2	= WHERE(tag EQ '1a')
+	;cut	= cut(1)
+
+	;;-----
+	;; 2D Map
+	;;-----
+	n_pix	= 1000L
+
+FOR ii=0L, N_ELEMENTS(cut2)-1L DO BEGIN
+	cut	= cut2(ii)
+	gal	= f_rdgal(800L, ['ID', 'Mass_tot'], id0=-1L, dir=settings.dir_save, horg='g')
+	id0	= gal.ID(cut)
+
+	dum1	= p_test1_getevol(id0, 800L, ctree1)
+	dum3	= p_test1_getevol(id0, 800L, ctree3)
+
+	dir	= '/storage6/jinsu/var/Paper3*/branchtest/'
+	iname	= 'GAL_' + STRING(id0,format='(I3.3)') + '_' + $
+		STRING(dum1.snap(dum1.endind) - 800L, format='(I3.3)') + '_' + $
+		STRING(dum3.snap(dum3.endind) - 800L, format='(I3.3)')
+	xc1	= DBLARR(200L, 2)
+	xc3	= DBLARR(200L, 2)
+	dl	= 200.
+	FOR i=0L, N_ELEMENTS(dum1.ID)-1L DO BEGIN
+		id0	= dum1.ID(i)
+		snap	= dum1.snap(i)
+
+		cut	= WHERE(dum3.snap EQ snap, ncut)
+		iname	= iname + '_' + STRING(i,format='(I3.3)') + '.eps'
+		IF ncut EQ 0L THEN STOP
+		id1	= dum3.id(cut)
+
+		gal1	= f_rdgal(snap, [settings.column_list], id0=id0, dir=settings.dir_save, horg='g')
+		gal3	= f_rdgal(snap, [settings.column_list], id0=id1, dir=settings.dir_save, horg='g')
+
+		ptcl	= f_rdptcl(id0, snap, num_thread=40L, dir_raw=settings.dir_raw, $
+			dir_catalog=settings.dir_catalog + '../', /p_pos, /p_mass, /raw, $
+			boxrange=dl)
+
+		xr	= [-1.,1.]*dl + gal1.xc(0)
+		yr	= [-1.,1.]*dl + gal1.yc(0)
+		bw	= [(xr(1)-xr(0))/n_pix, (yr(1)-yr(0))/n_pix]*0.5
+		denmap	= js_kde($
+			xx=ptcl.xp(*,0), yy=ptcl.xp(*,1), xrange=xr, yrange=yr, $
+			n_pix=n_pix, mode=-1L, kernel=1L, bandwidth=bw, weight=ptcl.mp)
+
+		xc1(i,*)= [gal1.xc(0), gal1.yc(0)]
+		xc3(i,*)= [gal3.xc(0), gal3.yc(0)]
+		image	= BYTSCL(ALOG10(denmap.z + 1.0d), min=4., max=11.)
+
+		LOADCT, 0
+		cgPS_open, dir + iname, /encapsulated
+		cgDisplay, 800, 800
+		cgPlot, 0, 0, /nodata, xstyle=4, ystyle=4, position=[0., 0., 1., 1.], $
+			background='black', axiscolor='white', xrange=xr, yrange=yr
+		cgImage, image, /noerase
+
+		cgOplot, xc1(0:i,0), xc1(0:i,1), linestyle=0, color='red'
+	        cgOplot, xc3(0:i,0), xc3(0:i,1), linestyle=0, color='blue'	
+		cgOplot, gal1.xc(0), gal1.yc(0), psym=16, color='red', symsize=1.0
+		cgOplot, gal3.xc(0), gal3.yc(0), psym=9, color='blue', symsize=2.0
+		cgPS_close
+	ENDFOR
+ENDFOR
+END
+
 PRO p_test1, settings
 
 	RESTORE, '/storage6/jinsu/var/Paper3*/ctree1.sav'
@@ -341,13 +451,12 @@ PRO p_test1, settings
 	;;-----
 	;; Branch Of the most massive galaxy
 	;;-----
-	p_test1_drbranch, settings, ctree1, gal
-	STOP
+	;p_test1_drbranch, settings, ctree1, gal
+
 	;;-----
 	;; Odd branch
 	;;-----
-	mr	= [1e10, 1e12]
-	p_test1_findoddgal, settings, gal, ctree1, ctree3, ind, mr
-
+	p_test1_lencomp, settings, ctree1, ctree3, tag
+	p_test1_vmap, settings, ctree1, ctree3, tag
 	STOP
 END
