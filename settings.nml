@@ -37,7 +37,7 @@ dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l1/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l3/'
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/run_030_959/'
 
 # Dir where RAMSES raw data located
@@ -90,10 +90,10 @@ P_VRrun	= 2L
 	P_VRrun_step = [1L, 2L, 0L, 0L, 0L, 1L]
 	#P_VRrun_step = [1L, 2L, 1L, 1L, 1L, 1L]
 	
-P_TFrun	= 2L
+P_TFrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
-	P_TFrun_snap = [030L, 959L, 1L]
+	P_TFrun_snap = [600L, 959L, 1L]
 
 	# Tree Direction
 	# 	Descendent	- 'desc'
@@ -106,7 +106,7 @@ P_TFrun	= 2L
 ##-----
 ## LIST OF CALL FUNCTIONS
 ##-----
-P_test1	= 1L
+P_test1	= 2L
 ##	get_gyr.pro
 ##		= get_gyr(conformal time, info.txt dir, lib dir, num_thread, n_snap)
 ##		> Conformal time to Gyr and Sfactor

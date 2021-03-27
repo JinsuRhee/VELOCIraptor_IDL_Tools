@@ -361,7 +361,7 @@ PRO p_test1_vmap, settings, ctree1, ctree3, tag
 	;;-----
 	;; Find Galaxy
 	;;-----
-	cut2	= WHERE(tag EQ '1a')
+	cut2	= WHERE(tag EQ '2a')
 	;cut	= cut(1)
 
 	;;-----
@@ -369,7 +369,7 @@ PRO p_test1_vmap, settings, ctree1, ctree3, tag
 	;;-----
 	n_pix	= 1000L
 
-FOR ii=0L, N_ELEMENTS(cut2)-1L DO BEGIN
+FOR ii=1L, N_ELEMENTS(cut2)-1L DO BEGIN
 	cut	= cut2(ii)
 	gal	= f_rdgal(800L, ['ID', 'Mass_tot'], id0=-1L, dir=settings.dir_save, horg='g')
 	id0	= gal.ID(cut)
@@ -378,7 +378,7 @@ FOR ii=0L, N_ELEMENTS(cut2)-1L DO BEGIN
 	dum3	= p_test1_getevol(id0, 800L, ctree3)
 
 	dir	= '/storage6/jinsu/var/Paper3*/branchtest/'
-	iname	= 'GAL_' + STRING(id0,format='(I3.3)') + '_' + $
+	iname2	= dir + 'GAL_' + STRING(id0,format='(I3.3)') + '_' + $
 		STRING(dum1.snap(dum1.endind) - 800L, format='(I3.3)') + '_' + $
 		STRING(dum3.snap(dum3.endind) - 800L, format='(I3.3)')
 	xc1	= DBLARR(200L, 2)
@@ -388,9 +388,14 @@ FOR ii=0L, N_ELEMENTS(cut2)-1L DO BEGIN
 		id0	= dum1.ID(i)
 		snap	= dum1.snap(i)
 
+		rd_info, info, file='/storage6/NewHorizon/output_' + $
+			STRING(snap,format='(I5.5)') + '/info_' + $
+			STRING(snap,format='(I5.5)') + '.txt'
+
+
 		cut	= WHERE(dum3.snap EQ snap, ncut)
-		iname	= iname + '_' + STRING(i,format='(I3.3)') + '.eps'
-		IF ncut EQ 0L THEN STOP
+		iname	= iname2 + '_' + STRING(i,format='(I3.3)') + '.png'
+		IF ncut EQ 0L THEN CONTINUE
 		id1	= dum3.id(cut)
 
 		gal1	= f_rdgal(snap, [settings.column_list], id0=id0, dir=settings.dir_save, horg='g')
@@ -407,22 +412,32 @@ FOR ii=0L, N_ELEMENTS(cut2)-1L DO BEGIN
 			xx=ptcl.xp(*,0), yy=ptcl.xp(*,1), xrange=xr, yrange=yr, $
 			n_pix=n_pix, mode=-1L, kernel=1L, bandwidth=bw, weight=ptcl.mp)
 
-		xc1(i,*)= [gal1.xc(0), gal1.yc(0)]
-		xc3(i,*)= [gal3.xc(0), gal3.yc(0)]
+		xc1(i,*)= [gal1.xc(0), gal1.yc(0)]*3.086d21/info.unit_l
+		xc3(i,*)= [gal3.xc(0), gal3.yc(0)]*3.086d21/info.unit_l
 		image	= BYTSCL(ALOG10(denmap.z + 1.0d), min=4., max=11.)
 
+		SET_PLOT, 'Z'
+		DEVICE, decomposed=0
+		;DEVICE, SET_RESOLUTION=[1000, 1000]
 		LOADCT, 0
-		cgPS_open, dir + iname, /encapsulated
-		cgDisplay, 800, 800
+		;cgPS_open, dir + iname, /encapsulated
+		;cgDisplay, 800, 800
 		cgPlot, 0, 0, /nodata, xstyle=4, ystyle=4, position=[0., 0., 1., 1.], $
 			background='black', axiscolor='white', xrange=xr, yrange=yr
-		cgImage, image, /noerase
-
-		cgOplot, xc1(0:i,0), xc1(0:i,1), linestyle=0, color='red'
-	        cgOplot, xc3(0:i,0), xc3(0:i,1), linestyle=0, color='blue'	
+		cgImage, image, /noerase, position=[0., 0., 1., 1.]
+		cgOplot, xc1(0:i,0)*info.unit_l/3.086d21, xc1(0:i,1)*info.unit_l/3.086d21, $
+			linestyle=0, color='red'
+	        cgOplot, xc3(0:i,0)*info.unit_l/3.086d21, xc3(0:i,1)*info.unit_l/3.086d21, $
+			linestyle=0, color='blue'	
 		cgOplot, gal1.xc(0), gal1.yc(0), psym=16, color='red', symsize=1.0
 		cgOplot, gal3.xc(0), gal3.yc(0), psym=9, color='blue', symsize=2.0
-		cgPS_close
+		cap	= TVRD()
+		DEVICE, /close
+		SET_PLOT, 'X'
+		WRITE_PNG, iname, cap
+
+		STOP
+		;cgPS_close
 	ENDFOR
 ENDFOR
 END
@@ -434,7 +449,7 @@ PRO p_test1, settings
 	;;-----
 	;; LOAD Galaxies
 	;;-----
-	gal	= f_rdgal(959L, [settings.column_list, 'SFR'], id0=-1L, dir=settings.dir_save, horg='g')
+	;gal	= f_rdgal(959L, [settings.column_list, 'SFR'], id0=-1L, dir=settings.dir_save, horg='g')
 	;p_test1_findgal, settings, ctree1, gal, prop1
 	;p_test1_findgal, settings, ctree3, gal, prop3
 
