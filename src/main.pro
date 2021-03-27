@@ -8,7 +8,7 @@ Pro main
 	root_path	= root_path + '/../'
 
 	!path   = expand_path('+' + root_path + 'src/sub/') + ':' + !path
-	;!path   = expand_path('+' + root_path + 'test/') + ':' + !path
+	!path   = expand_path('+' + root_path + 'test/') + ':' + !path
 
 	;;-----
 	;; Read the setting list
@@ -22,8 +22,13 @@ Pro main
 	;;-----
 	;; Main Procedures
 	;;-----
-	P_VRrun, settings
+	IF settings.P_VRrun EQ 1L THEN P_VRrun, settings
+	IF settings.P_TFrun EQ 1L THEN P_TFrun, settings
 
+	;;-----
+	;; TESTs
+	;;-----
+	IF settings.P_test1 EQ 1L THEN P_test1, settings
 	STOP
 
 End

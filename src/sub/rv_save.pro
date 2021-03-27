@@ -29,7 +29,7 @@ IF run EQ 0L THEN RETURN
 
 	ngal	= N_ELEMENTS((*data.rv_raw).id)
 	for i=0L, ngal - 1L do begin
-		IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
+		;IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
 		ib = -1L & iu = -1L & ptcl_id = -1L
 		IF N_ELEMENTS((*data.rv_id).b_ind) GE 2 THEN BEGIN
 			ib = (*data.rv_id).b_ind(i,*) & iu = (*data.rv_id).u_ind(i,*)
@@ -64,15 +64,42 @@ IF run EQ 0L THEN RETURN
 			SFR = (*data.rv_gprop).SFR(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).progs_bymerit) GE 2L THEN $
-			Progs = (*data.rv_tree).progs_bymerit(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Progs_bymerit', 	fid
+		;;----- Tree related
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymerit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymerit', 	fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).progs_bymass) GE 2L THEN $
-			Progs = (*data.rv_tree).progs_bymass(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Progs_bymass', 	fid
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_merit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_merit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_merit', 	fid
+
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymass', 	fid
+
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_mass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_mass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_mass', 	fid
+
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymass(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
+		;
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_matsnap) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_matsnap(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_matchedsnapshot', fid
+
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymerit(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymerit', fid
+
 		;;----- Wirte # of Ptcls
 		;simple_write_hdf5, n_bdn, 'P_NumB', fid
 		;simple_write_hdf5, n_ubd, 'P_NumU', fid
@@ -100,6 +127,9 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
 		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
 		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
+
+		;;-----Write clump data
+		simple_write_hdf5, data.isclump(i), 'isclump',	fid
 		;;----- Close the HDF5 file
 		h5f_close, fid
 
