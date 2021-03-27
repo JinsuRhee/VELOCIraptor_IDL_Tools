@@ -74,7 +74,6 @@ clump_mfrac	= 0.5
 ##-----
 ## Procedure
 ##-----
-
 P_VRrun	= 2L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
@@ -103,6 +102,9 @@ P_TFrun	= 1L
 	# Merit limit in deciding whether to keep a branch or not 
 	P_TFrun_meritlimit	= 0.001
 
+P_MKcatalog	= 2L
+	# Make Catalog based on VR + TF data
+	#
 ##-----
 ## LIST OF CALL FUNCTIONS
 ##-----
