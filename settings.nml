@@ -37,7 +37,7 @@ dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l3/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l1/'
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/run_030_959/'
 
 # Dir where RAMSES raw data located
@@ -92,7 +92,7 @@ P_VRrun	= 2L
 P_TFrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
-	P_TFrun_snap = [600L, 959L, 1L]
+	P_TFrun_snap = [150L, 250L, 1L]
 
 	# Tree Direction
 	# 	Descendent	- 'desc'

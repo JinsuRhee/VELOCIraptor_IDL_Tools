@@ -249,13 +249,13 @@ PRO p_tfrun_lastsnap, settings, complete_tree, n_comp, tree, evoldum, gind, g_cu
 	;;-----
 	;; Scan by IDs of the last snapshot
 	;;-----
-	FOR i=0L, N_ELEMENTS(g_curr.ID)-1L DO BEGIN
+	FOR i=0L, N_ELEMENTS(g_curr)-1L DO BEGIN
 		cut_exist	= WHERE(evoldum.snap EQ snap_curr AND $
-			evoldum.id EQ g_curr.ID(i), ncut_exist)
+			evoldum.id EQ g_curr(i).ID, ncut_exist)
 
 		IF ncut_exist EQ 1L THEN BEGIN	;; Finish Single Branch
 			tree(cut_exist).endind ++
-			tree(cut_exist).ID(tree(cut_exist).endind)	= g_curr.ID(i)
+			tree(cut_exist).ID(tree(cut_exist).endind)	= g_curr(i).ID
 			tree(cut_exist).snap(tree(cut_exist).endind)	= snap_curr
 		ENDIF ELSE IF ncut_exist EQ 2L THEN BEGIN	;; Merger happened at the last snapshot
 			maxmerit	= MAX(evoldum.merit(cut_exist))
@@ -266,7 +266,7 @@ PRO p_tfrun_lastsnap, settings, complete_tree, n_comp, tree, evoldum, gind, g_cu
 				IF evoldum.merit(ind) EQ maxmerit THEN BEGIN
 					;; Primary Link
 					tree(ind).endind ++
-					tree(ind).ID(tree(ind).endind)	= g_curr.ID(i)
+					tree(ind).ID(tree(ind).endind)	= g_curr(i).ID
 					tree(ind).snap(tree(ind).endind)= snap_curr
 				ENDIF ELSE IF ABS(tree(ind).snap(0) - snap_curr) GE 10L AND $
 					tree(ind).snap(0) NE -1L THEN BEGIN
@@ -355,7 +355,7 @@ PRO p_tfrun, settings
 		;;-----
 		;; LAST SNAPSHOT
 		;;-----
-		IF i EQ treeset.N1 THEN BEGIN
+		IF i EQ treeset.N1 OR snap_next EQ -1L THEN BEGIN
 			g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1L, $
 				dir=settings.dir_save, horg=settings.horg)
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
