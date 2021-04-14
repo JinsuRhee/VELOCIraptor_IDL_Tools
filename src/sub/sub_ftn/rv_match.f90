@@ -98,7 +98,7 @@
         !! Get # of DM or Star Ptcls
         !!-----
         IF(larr(19) .LE. 10) CALL GET_PTCL_NUM(&
-                p_d2(1:numptcl,7:7), p_i2(1:numptcl,7:7), &
+                p_d2(1:numptcl,7:7), p_i2(1:numptcl,2:2), &
                 numptcl, numptcl2, ptype, dmp_mass)
         IF(larr(19) .GT. 10) CALL GET_PTCL_NUM_YZiCS(&
                 p_d2(1:numptcl,7:7), p_d2(1:numptcl,8:8), &

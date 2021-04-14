@@ -1,7 +1,7 @@
 ##-----
 ## General Settings
 ##-----
-num_thread	= 10L
+num_thread	= 40L
 horg	= 'g'		;; Halo or Galaxy
 verbose	= 1L
 
@@ -31,13 +31,15 @@ R_longint	= 0L
 ## Path Settings
 ##-----
 # Dir where VR output located
-dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
+#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
+#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/test/'
+dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l3/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/lengthtest/l1/'
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/run_030_959/'
 
 # Dir where RAMSES raw data located
@@ -45,13 +47,15 @@ dir_raw		= '/storage6/NewHorizon/'
 
 # Dir where HDF5 results are saved
 # 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
-dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/test/snap_cfg1_0746/'
+dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
 
 ##-----
 ## DATA Settings
 ##-----
 #	Column list from the raw catalog
-column_list	= ['ID', 'ID_mbp', 'numSubStruct', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Efrac', 'Mass_200crit', 'Rvir', 'R_size', 'R_200mean', 'R_200crit', 'R_HalfMass', 'R_HalfMass_200mean', 'R_HalfMass_200crit', 'Rmax', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'Vmax', 'npart']
+column_list	= ['ID', 'ID_mbp', 'hostHaloID', 'numSubStruct', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Efrac', 'Mass_200crit', 'Rvir', 'R_size', 'R_200mean', 'R_200crit', 'R_HalfMass', 'R_HalfMass_200mean', 'R_HalfMass_200crit', 'Rmax', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'Vmax', 'npart']
 
 #	Flux List
 #		Mag_r - Aperture size in Rhalfmass unit for measuring magnitude
@@ -74,12 +78,11 @@ clump_mfrac	= 0.5
 ##-----
 ## Procedure
 ##-----
-
-P_VRrun	= 2L
+P_VRrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
 	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-	P_VRrun_snap = [959, 959, 1L]
+	P_VRrun_snap = [1023, 1023, 1L]
 
 	# Run Procedure
 	#	0	- Skip the procedure (values are filled with dummy values)
@@ -87,13 +90,13 @@ P_VRrun	= 2L
 	#	2	- Force Run (run the procedure and overlap the pre-run data)
 	#
 	#	[read raw data, read tree, read ID, ID matching, Compute Galaxy Prop, Save the data]
-	P_VRrun_step = [1L, 2L, 0L, 0L, 0L, 1L]
+	P_VRrun_step = [1L, 0L, 1L, 1L, 1L, 1L]
 	#P_VRrun_step = [1L, 2L, 1L, 1L, 1L, 1L]
 	
-P_TFrun	= 1L
+P_TFrun	= 2L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
-	P_TFrun_snap = [600L, 959L, 1L]
+	P_TFrun_snap = [100L, 600L, 1L]
 
 	# Tree Direction
 	# 	Descendent	- 'desc'
@@ -103,6 +106,9 @@ P_TFrun	= 1L
 	# Merit limit in deciding whether to keep a branch or not 
 	P_TFrun_meritlimit	= 0.001
 
+P_MKcatalog	= 2L
+	# Make Catalog based on VR + TF data
+	#
 ##-----
 ## LIST OF CALL FUNCTIONS
 ##-----
