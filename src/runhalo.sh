@@ -1,5 +1,5 @@
-for i in $(seq -f "%03g" 800 959)
+for i in $(seq -f "%04g" 0850 1026)
 do
-	sed -i "81c P_VRrun_snap = [${i}, ${i}, 1L]" ../settings.nml
+	sed -i "85c P_VRrun_snap = [${i}, ${i}, 1L]" ../settings.nml
 	idl -e main
 done
