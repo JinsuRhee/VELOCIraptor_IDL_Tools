@@ -409,8 +409,8 @@ PRO p_tfrun, settings
 		PRINT, '	ALL : ' +  STRTRIM(treelog.n_all,2) + $
 			' / NEW :' + STRTRIM(treelog.n_new,2) +  $
 			' / LINK : ' + STRTRIM(treelog.n_link,2) + $
-			'; ' + STRTRIM(treelog.n_link2,2) + $
-			;'; ' + STRTRIM(treelog.n_link3,2) + $
+			;' ' + STRTRIM(treelog.n_link2,2) + $
+			;' ' + STRTRIM(treelog.n_link3,2) + $
 			' / Broken : ' + STRTRIM(treelog.n_broken,2) + $
 			' / NGal : ' + STRTRIM(gind+n_comp,2) + $
 			' / Gind : ' + STRTRIM(gind,2)

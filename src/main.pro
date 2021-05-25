@@ -30,6 +30,8 @@ Pro main
 	;; TESTs
 	;;-----
 	IF settings.P_test1 EQ 1L THEN P_test1, settings
+
+	PRINT, 'Compute ocntamination fraction & merge stellar clump to the host galaxy'
 	STOP
 
 End
