@@ -8,6 +8,7 @@ PRO P_VRrun, settings
 	FOR i=N1, N2, DN DO BEGIN
 		n_snap	= i
 
+		PRINT, '	-----', i, ' is starting'
 		dir	= settings.dir_catalog + $
 			settings.dir_catalog_pre + $
 			STRING(n_snap,format='(I4.4)') + $
