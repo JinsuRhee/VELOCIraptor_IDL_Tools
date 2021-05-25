@@ -94,17 +94,6 @@ PRO read_vraptor, settings, n_snap
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
-	;; Clump Find
-	;;-----
-	cut	= WHERE((*data.rv_gprop).SFR(*,0) GT $
-		(*data.rv_raw).mass_tot / (settings.SFR_T(0)*1e9) * settings.clump_mfrac)
-
-	isclump		= LONARR(N_ELEMENTS((*data.rv_raw).id)) - 1L
-	isclump(cut)	= 1L
-
-	data	= CREATE_STRUCT(data,'isclump',isclump)
-
-	;;-----
 	;; HDF5 output
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'HDF5 Saving...', /bef

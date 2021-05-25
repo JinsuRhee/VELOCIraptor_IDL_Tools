@@ -60,24 +60,27 @@ IF run EQ 2L THEN BEGIN
 		SFR_T=settings.SFR_T, SFR_R=settings.SFR_R, $
 		lib=settings.dir_lib, num_thread=settings.num_thread)
 
-	output	= CREATE_STRUCT('SFR', SFR)
-		;tmp0	= 'output2 = CREATE_STRUCT('
+	;;-----
+	;; CLUMP CORRECTION
+	;;-----
+	cut	= WHERE(SFR(*,0) GT $
+		rawdata.mass_tot / (settings.SFR_T(0)*1e9) * settings.clump_mfrac, ncut)
+	SFR2	= SFR
+	IF ncut GE 1L THEN BEGIN
+		isclump	= LONARR(N_ELEMENTS(rawdata.id)) - 1L
+		isclump(cut)	= 1L
 
-		;FOR i=0L, n_sfr-1L DO BEGIN
-		;	tmp = 'SFR'
-		;	IF(SFR_R(i) GT 0) THEN tmp = tmp + $
-		;		'_' + string(long(SFR_r(i)),format='(I1.1)') + '_'
-		;	IF(SFR_R(i) LT 0) THEN tmp = tmp + '_T_'
+		FOR i=0L, ncut-1L DO BEGIN
+			ind	= cut(i)
+			hostid	= rawdata.hostHaloID(ind)
+			IF hostid LT 0L THEN CONTINUE
+			cut2	= WHERE(rawdata.ID EQ hostid)
+			SFR2(cut2,*)	+= SFR(ind,*)
+			SFR2(ind,*)	= 0.
+		ENDFOR
+	ENDIF
 
-		;	tmp	= tmp + string(long(SFR_T(i)*1000.),format='(I4.4)')
-
-		;	tmp0	= tmp0 + '"' + tmp + '"' + $
-		;		', SFR(*,' + strtrim(i,2) + ')'
-		;	IF i LT n_sfr-1L THEN tmp0 = tmp0 + ','
-		;ENDFOR
-		;tmp0	= tmp0 + ')'
-		;void	= execute(tmp0)
-
+	output	= CREATE_STRUCT('SFR', SFR, 'SFR_clumpcorr', SFR2)
 	PRINT, '        %%%%% GProp - SFRs are calculated'
 
 	;;-----

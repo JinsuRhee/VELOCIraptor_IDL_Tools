@@ -64,6 +64,11 @@ IF run EQ 0L THEN RETURN
 			SFR = (*data.rv_gprop).SFR(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
+		SFR = -1.
+		IF N_ELEMENTS((*data.rv_gprop).SFR_clumpcorr) GE 2L THEN $
+			SFR = (*data.rv_gprop).SFR_clumpcorr(i,*)
+		simple_write_hdf5, SFR, 'G_Prop/G_SFR_clumpycorr',	fid
+
 		CONFrac = -1.
 		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
 			Confrac = (*data.rv_gprop).CONFrac(i,*)
