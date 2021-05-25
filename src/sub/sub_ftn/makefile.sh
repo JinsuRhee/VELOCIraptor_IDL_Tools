@@ -24,10 +24,14 @@ gfortran -fopenmp -fPIC -c get_magnitude.f90 -o get_magnitude.o
 gcc -fopenmp -fPIC -c get_magnitude_c2f.c -o get_magnitude_c2f.o
 gcc -shared -fopenmp get_magnitude.o get_magnitude_c2f.o -o get_magnitude.so
 
-gfortran -fopenmp -fPIC -mcmodel=large -c get_ptcl.f90 -o get_ptcl.o
-gcc -fopenmp -fPIC -mcmodel=large -c get_ptcl_c2f.c -o get_ptcl_c2f.o
-gcc -shared -fopenmp get_ptcl.o get_ptcl_c2f.o -o get_ptcl.so -lgfortran
+#gfortran -fopenmp -fPIC -mcmodel=large -c get_ptcl.f90 -o get_ptcl.o
+#gcc -fopenmp -fPIC -mcmodel=large -c get_ptcl_c2f.c -o get_ptcl_c2f.o
+#gcc -shared -fopenmp get_ptcl.o get_ptcl_c2f.o -o get_ptcl.so -lgfortran
 
 gfortran -fopenmp -fPIC -c find_domain.f90 -o find_domain.o
 gcc -fopenmp -fPIC -c find_domain_c2f.c -o find_domain_c2f.o
 gcc -shared -fopenmp find_domain.o find_domain_c2f.o -o find_domain.so -lgfortran
+
+gfortran -fopenmp -fPIC -c get_contam.f90 -o get_contam.o
+gcc -fopenmp -fPIC -c get_contam_c2f.c -o get_contam_c2f.o
+gcc -shared -fopenmp get_contam.o get_contam_c2f.o -o get_contam.so -lgfortran

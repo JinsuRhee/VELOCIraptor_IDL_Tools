@@ -101,6 +101,7 @@ PRO read_vraptor, settings, n_snap
 
 	isclump		= LONARR(N_ELEMENTS((*data.rv_raw).id)) - 1L
 	isclump(cut)	= 1L
+
 	data	= CREATE_STRUCT(data,'isclump',isclump)
 
 	;;-----

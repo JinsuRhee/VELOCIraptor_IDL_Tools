@@ -37,6 +37,7 @@ IF run EQ 2L THEN BEGIN
 	abmag		= DBLARR(n_gal, n_flux, n_magap)
 	SFR		= DBLARR(n_gal, n_sfr)
 
+	confrac		= DBLARR(n_gal, N_ELEMENTS(settings.CONF_r)) - 1.0d8
 	PRINT, '        %%%%% GProp - MEMORY ALLOCATED'
 
 	;;-----
@@ -93,6 +94,14 @@ IF run EQ 2L THEN BEGIN
 	output	= CREATE_STRUCT(output, 'SFR_R', settings.SFR_R, 'SFR_T', settings.SFR_T, $
 		'MAG_R', settings.MAG_R)
 	PRINT, '        %%%%% GProp - Magnitudes are calculated'
+
+	;;-----
+	;; Contamination Fraction
+	;;-----
+	TIC
+	confrac	= get_cfrac(settings, rawdata, confrac, n_snap)
+	TOC, /verbose
+	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
 
 	SAVE, filename=dir_data + 'rv_gprop.sav', output
 	RETURN, PTR_NEW(output,/no_copy)
