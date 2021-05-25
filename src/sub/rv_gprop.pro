@@ -98,9 +98,9 @@ IF run EQ 2L THEN BEGIN
 	;;-----
 	;; Contamination Fraction
 	;;-----
-	TIC
 	confrac	= get_cfrac(settings, rawdata, confrac, n_snap)
-	TOC, /verbose
+
+	output	= CREATE_STRUCT(output, 'CONFRAC', confrac)
 	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
 
 	SAVE, filename=dir_data + 'rv_gprop.sav', output

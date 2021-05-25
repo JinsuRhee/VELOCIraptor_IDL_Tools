@@ -64,6 +64,11 @@ IF run EQ 0L THEN RETURN
 			SFR = (*data.rv_gprop).SFR(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
+		CONFrac = -1.
+		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
+			Confrac = (*data.rv_gprop).CONFrac(i,*)
+		simple_write_hdf5, CONfrac, 'G_Prop/G_ConFrac',	fid
+
 		;;----- Tree related
 		;Progs = -1L
 		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
@@ -127,6 +132,7 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
 		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
 		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
+		simple_write_hdf5, settings.CONF_R, 'CONF_R', 			fid
 
 		;;-----Write clump data
 		simple_write_hdf5, data.isclump(i), 'isclump',	fid
