@@ -66,8 +66,8 @@ IF run EQ 2L THEN BEGIN
 	cut	= WHERE(SFR(*,0) GT $
 		rawdata.mass_tot / (settings.SFR_T(0)*1e9) * settings.clump_mfrac, ncut)
 	SFR2	= SFR
+	isclump	= LONARR(N_ELEMENTS(rawdata.id)) - 1L
 	IF ncut GE 1L THEN BEGIN
-		isclump	= LONARR(N_ELEMENTS(rawdata.id)) - 1L
 		isclump(cut)	= 1L
 
 		FOR i=0L, ncut-1L DO BEGIN
@@ -79,8 +79,7 @@ IF run EQ 2L THEN BEGIN
 			SFR2(ind,*)	= 0.
 		ENDFOR
 	ENDIF
-
-	output	= CREATE_STRUCT('SFR', SFR, 'SFR_clumpcorr', SFR2)
+	output	= CREATE_STRUCT('SFR', SFR, 'SFR_clumpcorr', SFR2, 'isclump', isclump)
 	PRINT, '        %%%%% GProp - SFRs are calculated'
 
 	;;-----
