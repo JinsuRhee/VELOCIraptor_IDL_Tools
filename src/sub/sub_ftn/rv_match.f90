@@ -103,7 +103,7 @@
         IF(larr(19) .GT. 10) CALL GET_PTCL_NUM_YZiCS(&
                 p_d2(1:numptcl,7:7), p_d2(1:numptcl,8:8), &
                 numptcl, numptcl2, ptype, dmp_mass)
-        IF(numptcl2 .LT. 0) THEN
+        IF(numptcl2 .LE. 0) THEN
                 DEALLOCATE(p_d2, p_i2)
                 CYCLE !! If there is no target ptcls
         ENDIF
@@ -181,6 +181,8 @@
           CALL match(p_i, p_d, p_i2, p_d2, &
                   numptcl2, numtmp, matchok, larr, darr)
 
+          !CALL match_hash(p_i, p_d, p_i2, p_d2, &
+          !        numptcl2, numtmp, matchok, noptcl)
           !!-----
           !! Write matched data into the original array
           !!-----
@@ -349,6 +351,79 @@
 !!!!!
 !! MATCHING
 !!!!!
+      SUBROUTINE match_hash(raw_int, raw_dbl, &
+              gal_id, gal_dbl, &
+              n_raw, n_gal, matchok, noptcl)
+      IMPLICIT NONE
+      INTEGER(KIND=4) n_raw, n_gal, matchok
+
+      REAL(KIND=8) raw_dbl(n_raw,9)
+      INTEGER(KIND=8) raw_int(n_raw, 3), raw_id(n_raw)
+      INTEGER(KIND=8) noptcl
+
+      REAL(KIND=8) gal_dbl(n_gal,9)
+      INTEGER(KIND=8) gal_id(n_gal,1)
+      !!-----
+      !! LOCAL VARIABLEs
+      !!-----
+      INTEGER(KIND=4) i, j, k, l
+      INTEGER(KIND=4) hash(n_raw), hash_next(n_raw)
+      INTEGER(KIND=4) ind, i0
+
+      DO i=1, n_raw
+        raw_id(i) = raw_int(i,3)
+      ENDDO
+
+      hash      = -1
+      hash_next = -1
+      !!-----
+      !! MAKE HASH TABLE
+      !!-----
+      DO i=1, n_raw
+        ind = MOD(ABS(raw_id(i)), n_raw) + 1
+        IF(hash(ind) .LT. 0) THEN
+          hash(ind) = i
+        ELSE
+          i0 = hash(ind)
+          DO WHILE (1 .EQ. 1)
+            IF(hash_next(i0) .LE. 0) THEN
+              hash_next(i0) = i
+              EXIT
+            ELSE
+              i0 = hash_next(i0)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+
+      !!-----
+      !! MATCHING
+      !!-----
+      DO i=1, n_gal
+        !PRINT *, i, n_raw, n_gal
+        IF(gal_id(i,1) .LE. noptcl) CYCLE
+        ind = MOD(ABS(gal_id(i,1)), n_raw) + 1
+        i0  = hash(ind)
+        IF(i0 .LE. 0) CYCLE
+        DO WHILE(1 .EQ. 1)
+          IF(gal_id(i,1) .EQ. raw_id(i0)) THEN
+            DO j=1,9
+              gal_dbl(i,j) = raw_dbl(i0,j)
+            ENDDO
+            matchok = 1
+            EXIT
+          ELSE
+            IF(hash_next(i0) .GT. 0) THEN
+              i0 = hash_next(i0)
+            ELSE
+              EXIT
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDDO
+
+      RETURN
+      END SUBROUTINE
 
       Subroutine match(raw_int, raw_dbl, &
               gal_id, gal_dbl, &
