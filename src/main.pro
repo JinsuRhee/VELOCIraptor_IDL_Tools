@@ -13,7 +13,6 @@ Pro main
 	;;-----
 	;; Read the setting list
 	;;-----
-	PRINT, 'contamination fraction'
 	;STOP
 	settings = 0. & file_nml = root_path + 'settings.nml'
 	read_nml, settings, file=file_nml
