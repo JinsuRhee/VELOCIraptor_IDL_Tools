@@ -87,7 +87,7 @@ P_VRrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
 	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [1017, 1017, 1L]
+P_VRrun_snap = [0602, 0602, 1L]
 
 	# Run Procedure
 	#	0	- Skip the procedure (values are filled with dummy values)
@@ -96,7 +96,7 @@ P_VRrun_snap = [1017, 1017, 1L]
 	#
 	#	[read raw data, read ID, ID matching, Compute Galaxy Prop, Save the data]
 	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
-	P_VRrun_step = [1L, 0L, 0L, 1L, 1L]
+	P_VRrun_step = [1L, 0L, 0L, 0L, 1L]
 	
 P_TFrun	= 2L
 	# Snapshot range setting

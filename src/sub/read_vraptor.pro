@@ -98,7 +98,6 @@ PRO read_vraptor, settings, n_snap
 		n_snap, run=settings.P_VRrun_step(3))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
-	STOP
 	;;-----
 	;; HDF5 output
 	;;-----

@@ -54,11 +54,12 @@ IF run EQ 0L THEN RETURN
 			simple_write_hdf5, tmp, 'G_Prop/G_' + settings.column_list(j),	fid
 		endfor
 
+IF settings.horg EQ 'g' THEN BEGIN
 		ABMag	= -1.
 		IF N_ELEMENTS((*data.rv_gprop).ABMAG) GE 2L THEN $
 			ABMag = (*data.rv_gprop).ABMAG(i,*,*)
 		simple_write_hdf5, ABMag, 'G_Prop/G_ABmag',	fid
-
+	
 		SFR = -1.
 		IF N_ELEMENTS((*data.rv_gprop).SFR) GE 2L THEN $
 			SFR = (*data.rv_gprop).SFR(i,*)
@@ -73,7 +74,7 @@ IF run EQ 0L THEN RETURN
 		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
 			Confrac = (*data.rv_gprop).CONFrac(i,*)
 		simple_write_hdf5, CONfrac, 'G_Prop/G_ConFrac',	fid
-
+ENDIF
 		;;----- Tree related
 		;Progs = -1L
 		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
@@ -120,6 +121,7 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, ptcl_id,	'P_Prop/P_ID',		fid
 
 		;;----- Write Other Information
+IF settings.horg EQ 'g' THEN BEGIN
 		rate = -1.
 		IF N_ELEMENTS((*data.rv_ptmatch).rate) GE 2L THEN $
 			rate = (*data.rv_ptmatch).rate(i)
@@ -141,6 +143,8 @@ IF run EQ 0L THEN RETURN
 
 		;;-----Write clump data
 		simple_write_hdf5, (*data.rv_gprop).isclump(i), 'isclump',	fid
+ENDIF
+
 		;;----- Close the HDF5 file
 		h5f_close, fid
 
