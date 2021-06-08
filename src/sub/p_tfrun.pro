@@ -189,6 +189,7 @@ PRO p_tfrun_match, settings, treelog, tree, complete_tree, n_comp, $
 		;;----- Matching by one with most largest Merit
 		cut	= MIN(WHERE(dum_mer EQ MAX(dum_mer)))
 		cut2	= WHERE(g_next.ID EQ dum_id(cut) AND g_next.npart EQ dum_part(cut), ncut)
+
 		IF ncut EQ 0L THEN CONTINUE
 
 		;;----- Link
@@ -257,7 +258,7 @@ PRO p_tfrun_lastsnap, settings, complete_tree, n_comp, tree, evoldum, gind, g_cu
 			tree(cut_exist).endind ++
 			tree(cut_exist).ID(tree(cut_exist).endind)	= g_curr(i).ID
 			tree(cut_exist).snap(tree(cut_exist).endind)	= snap_curr
-		ENDIF ELSE IF ncut_exist EQ 2L THEN BEGIN	;; Merger happened at the last snapshot
+		ENDIF ELSE IF ncut_exist GE 2L THEN BEGIN  ;; Merger happened at the last snapshot
 			maxmerit	= MAX(evoldum.merit(cut_exist))
 			ind0		= cut_exist(WHERE(evoldum.merit(cut_exist) EQ maxmerit))
 			endind		= tree(ind0).endind + 1
@@ -281,8 +282,11 @@ PRO p_tfrun_lastsnap, settings, complete_tree, n_comp, tree, evoldum, gind, g_cu
 				ENDIF ELSE BEGIN
 					p_tfrun_clearbranch, tree, evoldum, ind, gind
 				ENDELSE
+
 			ENDFOR
+
 		ENDIF
+
 	ENDFOR
 
 	tree	= tree(0L:gind)
@@ -418,5 +422,7 @@ PRO p_tfrun, settings
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 
 	ENDFOR
+	PRINT, 'Mergered branch mutual link'
+	PRINT, 'finish branch modulate m_ID'
 	STOP
 END

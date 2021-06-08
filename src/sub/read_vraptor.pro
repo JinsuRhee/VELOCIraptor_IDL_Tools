@@ -43,6 +43,7 @@ PRO read_vraptor, settings, n_snap
 	void	= rv_ReadID	(settings, ' ', ' ', run=0L)
 	void	= rv_PTMatch	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_GProp	(settings, ' ', ' ', 1L, run=0L)
+	void	= rv_Hprop	(settings, ' ', ' ', 1L, run=0L)
 	rv_save, settings, ' ', 1L, run=0L
 
 	;;-----
@@ -74,7 +75,7 @@ PRO read_vraptor, settings, n_snap
 	;; Read Particle IDs
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Particle IDs...', /bef
-	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(2))
+	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(1))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
@@ -82,22 +83,27 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Particle Matching...', /bef
 	data.rv_ptmatch	= rv_PTMatch(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(2))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+
+	;;-----
+	;; Group Property
+	;;-----
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Group Property...', /bef
+	IF settings.horg EQ 'g' THEN $
+		data.rv_gprop	= rv_Gprop(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(3))
+	IF settings.horg EQ 'h' THEN $
+		data.rv_gprop	= rv_Hprop(settings, dir_data, data, $
 		n_snap, run=settings.P_VRrun_step(3))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
-	;;-----
-	;; Galaxy Property
-	;;-----
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Galaxy Property...', /bef
-	data.rv_gprop	= rv_GProp(settings, dir_data, data, $
-		n_snap, run=settings.P_VRrun_step(4))
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
-
+	STOP
 	;;-----
 	;; HDF5 output
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'HDF5 Saving...', /bef
-	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(5)
+	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(4)
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----

@@ -1,8 +1,8 @@
 ##-----
 ## General Settings
 ##-----
-num_thread	= 40L
-horg	= 'g'		;; Halo or Galaxy
+num_thread	= 10L
+horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
 # effective resolution equal to the one in the configuration file
@@ -33,13 +33,13 @@ R_longint	= 0L
 # Dir where VR output located
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
-dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
-#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
+#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
+dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/cfgtest2/tree/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/tree/l3/'
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/run_030_959/'
 
 # Dir where RAMSES raw data located
@@ -48,8 +48,8 @@ dir_raw		= '/storage6/NewHorizon/'
 # Dir where HDF5 results are saved
 # 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
 #dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
-dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
+dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
 ##-----
 ## DATA Settings
@@ -87,21 +87,21 @@ P_VRrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
 	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [0100, 0100, 1L]
+P_VRrun_snap = [1017, 1017, 1L]
 
 	# Run Procedure
 	#	0	- Skip the procedure (values are filled with dummy values)
 	#	1	- Soft Run (if there is pre-run data, just load the result)
 	#	2	- Force Run (run the procedure and overlap the pre-run data)
 	#
-	#	[read raw data, read tree, read ID, ID matching, Compute Galaxy Prop, Save the data]
-	P_VRrun_step = [1L, 0L, 1L, 1L, 2L, 1L]
-	#P_VRrun_step = [1L, 2L, 1L, 1L, 1L, 1L]
+	#	[read raw data, read ID, ID matching, Compute Galaxy Prop, Save the data]
+	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
+	P_VRrun_step = [1L, 0L, 0L, 1L, 1L]
 	
 P_TFrun	= 2L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
-	P_TFrun_snap = [600L, 900L, 1L]
+	P_TFrun_snap = [610L, 900L, 1L]
 
 	# Tree Direction
 	# 	Descendent	- 'desc'

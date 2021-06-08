@@ -1,7 +1,4 @@
-
-
-
-FUNCTION get_cfrac, settings, rawdata, confrac, n_snap
+FUNCTION get_cfrac, settings, rawdata, confrac, n_snap, horg=horg
 
 	n_gal	= N_ELEMENTS(rawdata.ID)
 	n_aper	= N_ELEMENTS(settings.CONF_R)
@@ -23,6 +20,7 @@ FUNCTION get_cfrac, settings, rawdata, confrac, n_snap
 	yc	= rawdata.yc * 3.086d21 / siminfo.unit_l
 	zc	= rawdata.zc * 3.086d21 / siminfo.unit_l
 	rr	= rawdata.r_halfmass * 3.086d21 / siminfo.unit_l
+	IF horg EQ 'h' THEN rr = rawdata.rvir * 3.086d21 / siminfo.unit_l
 
 	;;-----
 	;; GET DOMAIN
