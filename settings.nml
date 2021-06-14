@@ -1,7 +1,7 @@
 ##-----
 ## General Settings
 ##-----
-num_thread	= 10L
+num_thread	= 40L
 horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
@@ -33,14 +33,14 @@ R_longint	= 0L
 # Dir where VR output located
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
-#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
+#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/tree/l3/'
-#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/run_030_959/'
+#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/l1/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
 
 # Dir where RAMSES raw data located
 dir_raw		= '/storage6/NewHorizon/'
@@ -48,7 +48,7 @@ dir_raw		= '/storage6/NewHorizon/'
 # Dir where HDF5 results are saved
 # 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
 #dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy4/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
 ##-----
@@ -83,11 +83,11 @@ clump_mfrac	= 0.5
 ##-----
 ## Procedure
 ##-----
-P_VRrun	= 1L
+P_VRrun	= 2L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
 	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [0602, 0602, 1L]
+P_VRrun_snap = [1026, 1026, 1L]
 
 	# Run Procedure
 	#	0	- Skip the procedure (values are filled with dummy values)
@@ -98,10 +98,10 @@ P_VRrun_snap = [0602, 0602, 1L]
 	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	P_VRrun_step = [1L, 0L, 0L, 0L, 1L]
 	
-P_TFrun	= 2L
+P_TFrun	= 1L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
-	P_TFrun_snap = [610L, 900L, 1L]
+	P_TFrun_snap = [30L, 1026L, 1L]
 
 	# Tree Direction
 	# 	Descendent	- 'desc'

@@ -323,7 +323,7 @@ PRO p_tfrun, settings
 	;; Basic settings
 	;;-----
 	treeset	= p_tfrun_set(settings)
-
+	maxgind	= 100000L
 	;;-----
 	;; Allocate Memory
 	;;-----
@@ -334,10 +334,10 @@ PRO p_tfrun, settings
 		d_snap:dumarr, d_ID:dumarr, endind:-1L, $
 		m_ID:dumarr2, m_snap:dumarr2, m_merit:DOUBLE(dumarr2), m_BID:dumarr2, $
 		numprog:1L}
-	tree	= REPLICATE(dumstr, 10000L)
+	tree	= REPLICATE(dumstr, maxgind)
 	complete_tree	= PTRARR(100000L)
 
-	evoldum	= {ID:LONARR(10000L)-1L, snap:LONARR(10000L)-1L, merit:DBLARR(10000L)-1.d}
+	evoldum	= {ID:LONARR(maxgind)-1L, snap:LONARR(maxgind)-1L, merit:DBLARR(maxgind)-1.d}
 
 	;;-----
 	;; GO FORWARD
@@ -347,6 +347,8 @@ PRO p_tfrun, settings
 	n_comp	= 0L
 	treelog	= {n_new:0L, n_link:0L, n_link2:0L, n_link3:0L, n_broken:0L, n_all:0L}
 	FOR i=treeset.N0, treeset.N1, treeset.DN DO BEGIN
+		IF i LE 200L THEN CONTINUE
+		IF i EQ 201L THEN RESTORE, '~/treetmp.sav'
 		;;-----
 		;; SNAPSHOT CHECK
 		;;-----
@@ -420,6 +422,11 @@ PRO p_tfrun, settings
 			' / Gind : ' + STRTRIM(gind,2)
 
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
+
+		IF i EQ 300L THEN BEGIN
+			SAVE, filename='~/treetmp.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
+			STOP
+		ENDIF
 
 	ENDFOR
 	PRINT, 'Mergered branch mutual link'
