@@ -314,11 +314,167 @@ PRO p_tfrun_remove, settings, evoldum, tree, gind, complete_tree, n_comp, snap_c
 		ENDIF
 	ENDFOR
 END
+
+;;-----
+;; Correct Tree
+;;-----
+FUNCTION p_TFRun_corr_getbr, tree, gal, snap0
+	bid	= LONARR(N_ELEMENTS(gal))-1L
+	n_tree	= N_ELEMENTS(tree)
+
+	FOR i=0L, n_tree-1L DO BEGIN
+		tmp	= *tree(i)
+		IF tmp.snap(tmp.endind) NE snap0 THEN CONTINUE
+		cut	= WHERE(gal.ID EQ tmp.id(tmp.endind),ncut)
+		IF ncut EQ 0L THEN CONTINUE
+		bid(cut)	= i
+	ENDFOR
+	RETURN, bid
+END
+FUNCTION p_TFRun_corr_gettlength, tree, gal, bid
+
+	tlength	= LONARR(N_ELEMENTS(gal))+1L
+	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
+		tmp	= *tree(bid(i))
+		tlength(i)	= tmp.snap(tmp.endind) - tmp.snap(0) + 1
+	ENDFOR
+	RETURN, tlength
+END
+FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, ind, remove_ind
+
+	n_search	= settings.p_TFRun_corr_nsearch
+	n_tree		= N_ELEMENTS(complete_tree)
+
+	link_ind	= [-1L]
+	link_merit	= [0.d]
+	FOR i=0L, n_search-1L DO BEGIN
+		id0	= tree.ID(i)
+		snap0	= tree.snap(i)
+
+		FOR j=0L, n_tree-1L DO BEGIN
+			IF j EQ ind THEN CONTINUE
+			IF remove_ind(j) GE 0L THEN CONTINUE
+
+			tmp	= *complete_tree(j)
+			cut	= WHERE(tmp.d_id EQ id0 AND tmp.d_snap EQ snap0, ncut)
+
+			IF ncut GE 1L THEN BEGIN
+				;;----- Error log
+				IF cut NE tmp.endind THEN BEGIN
+					PRINT, 'Why This?'
+					STOP
+				ENDIF
+
+				link_ind	= [link_ind, j]	;; Index of complete_tree
+
+				id_tmp	= tmp.id(tmp.endind)
+				snap_tmp= tmp.snap(tmp.endind)
+
+				cut	= WHERE(tree.m_ID EQ id_tmp AND tree.m_snap EQ snap_tmp, ncut)
+				IF ncut EQ 0L THEN BEGIN
+					PRINT, 'error'
+					STOP
+				ENDIF
+				link_merit	= [link_merit, tree.m_merit(cut)]
+			ENDIF
+		ENDFOR
+	ENDFOR
+
+	IF N_ELEMENTS(link_ind) EQ 1L THEN RETURN, tree
+
+	cut	= WHERE(link_merit EQ MAX(link_merit))
+	link_ind= link_ind(cut)
+
+	tree_tolink	= *complete_tree(link_ind(0))
+	remove_ind(link_ind(0))	= 1L
+
+	cut	= WHERE(tree.ID EQ tree_tolink.d_ID(tree_tolink.endind) AND $
+		tree.snap EQ tree_tolink.d_snap(tree_tolink.endind), ncut)
+
+	;;----- ERROR LOG
+	IF ncut EQ 0L THEN BEGIN
+		PRINT, 'Why This2?'
+		STOP
+	ENDIF
+
+	cut	= cut(0)
+	tree2	= {$
+		ID:[		tree_tolink.ID, 	tree.ID(cut:tree.endind)], $
+		SNAP:[		tree_tolink.snap, 	tree.snap(cut:tree.endind)], $
+		STAT:'main', $
+		P_SNAP:[	tree_tolink.p_snap, 	tree.p_snap(cut:tree.endind)], $
+		P_ID:[		tree_tolink.p_id, 	tree.p_id(cut:tree.endind)], $
+		P_MERIT:[	tree_tolink.p_merit,	tree.p_merit(cut:tree.endind)], $
+		M_ID:[		tree_tolink.M_ID,	tree.M_ID], $
+		M_MERIT:[	tree_tolink.M_MERIT,	tree.M_MERIT], $
+		M_BID:[		tree_tolink.M_BID, 	tree.M_BID], $
+		M_SNAP:[	tree_tolink.M_SNAP,	tree.M_SNAP], $
+		D_ID:[		tree_tolink.D_ID,	tree.D_ID(cut:tree.endind)], $
+		D_SNAP:[	tree_tolink.D_SNAP,	tree.D_SNAP(cut:tree.endind)], $
+		endind:		tree_tolink.endind + tree.endind - cut + 1, $
+		numprog:	tree_tolink.numprog + tree.numprog - 1L}
+
+	RETURN, tree2
+END
+PRO p_TFRun_corr, settings, complete_tree 
+
+	snap0	= settings.p_TFRun_corr_snap0
+
+	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
+	;;----- LOAD GAL & BRANCH
+	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg, id0=-1L)
+	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
+
+	;;----- CONNECT
+	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
+		IF bid(i) LT 0L THEN CONTINUE
+
+		tree	= *complete_tree(bid(i))
+		ind	= bid(i)
+		;;---- SEARCH LINKED TREE
+		REPEAT BEGIN
+			n0	= tree.snap(0)
+			tree	= p_TFRun_corr_link(settings, tree, complete_tree, ind, remove_ind)
+			n1	= tree.snap(0)
+		ENDREP UNTIL tree.snap(0) LT 100L OR n0 EQ n1
+
+		;;
+		tree0	= complete_tree(bid(i))
+		tree	= PTR_NEW(tree, /no_copy)
+
+		gal_ref	= f_getevol(tree0, gal(i).id, snap0, settings.column_list, horg='g', dir=settings.dir_catalog)
+		gal_new	= f_getevol(tree, gal(i).id, snap0, settings.column_list, horg='g', dir=settings.dir_catalog)
+
+		cgPlot, gal_ref.aexp, gal_ref.mass_tot, linestyle=0, thick=2, /ylog, $
+			xrange=[0., 1.], yrange=[1e9,1e11]
+		cgOplot, gal_new.aexp, gal_new.mass_tot, linestyle=0, thick=1, color='red'
+
+		img0	= draw_gal(821L, 569L, num_thread=10L, $
+			dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, $
+			/raw, boxrange=25., max=1e8)
+
+		img1	= draw_gal(2L, 567L, num_thread=10L, $
+			dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, $
+			/raw, boxrange=25., max=1e8)
+
+		cgDisplay, 1200, 600
+		cgImage, img1, position=[0., 0., 0.5, 1.0]
+		cgImage, img0, position=[0.5, 0., 1.0, 1.0], /noerase
+		STOP
+	ENDFOR
+	STOP
+
+	;; REMOVE IND
+
+END
+
 ;;-----
 ;; Main Part
 ;;-----
 PRO p_tfrun, settings
 
+GOTO, skip
 	;;-----
 	;; Basic settings
 	;;-----
@@ -347,8 +503,8 @@ PRO p_tfrun, settings
 	n_comp	= 0L
 	treelog	= {n_new:0L, n_link:0L, n_link2:0L, n_link3:0L, n_broken:0L, n_all:0L}
 	FOR i=treeset.N0, treeset.N1, treeset.DN DO BEGIN
-		IF i LE 200L THEN CONTINUE
-		IF i EQ 201L THEN RESTORE, '~/treetmp.sav'
+		;IF i LE 900L THEN CONTINUE
+		;IF i EQ 901L THEN RESTORE, '~/treetmp.sav'
 		;;-----
 		;; SNAPSHOT CHECK
 		;;-----
@@ -423,12 +579,19 @@ PRO p_tfrun, settings
 
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 
-		IF i EQ 300L THEN BEGIN
-			SAVE, filename='~/treetmp.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
-			STOP
-		ENDIF
+		;IF i EQ 900L THEN BEGIN
+		;	SAVE, filename='~/treetmp.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
+		;	STOP
+		;ENDIF
 
 	ENDFOR
+
+SKIP:
+	RESTORE, settings.dir_catalog + 'tree/l1/l1.sav'
+	STOP
+	IF settings.p_TFRun_corr EQ 1L THEN $
+		p_TFRun_corr, settings, complete_tree
+
 	PRINT, 'Mergered branch mutual link'
 	PRINT, 'finish branch modulate m_ID'
 	STOP
