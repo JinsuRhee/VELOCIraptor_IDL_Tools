@@ -100,7 +100,7 @@ IF run EQ 2L THEN BEGIN
 	;;-----
 	;; Contamination Fraction
 	;;-----
-	confrac	= get_cfrac(settings, rawdata, confrac, n_snap)
+	confrac	= get_cfrac(settings, rawdata, confrac, n_snap, horg=settings.horg)
 
 	output	= CREATE_STRUCT(output, 'CONFRAC', confrac)
 	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
