@@ -2,7 +2,7 @@
 ## General Settings
 ##-----
 num_thread	= 40L
-horg	= 'h'		;; Halo or Galaxy
+horg	= 'g'		;; Halo or Galaxy
 verbose	= 1L
 
 # effective resolution equal to the one in the configuration file
@@ -11,7 +11,7 @@ effective_resolution	= 4096
 # Tree direction
 # 	'des'	: descent tree
 #	'prg'	: progenitor tree
-treedir	= 'des'
+#treedir	= 'des'
 
 
 ##-----
@@ -33,14 +33,14 @@ R_longint	= 0L
 # Dir where VR output located
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
-#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
-dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
+dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
+#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/tree/l1/'
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l3_d/'
+#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
 
 # Dir where RAMSES raw data located
 dir_raw		= '/storage6/NewHorizon/'
@@ -48,8 +48,8 @@ dir_raw		= '/storage6/NewHorizon/'
 # Dir where HDF5 results are saved
 # 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
 #dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
-dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
+dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
 ##-----
 ## DATA Settings
@@ -99,17 +99,35 @@ P_VRrun_snap = [1026, 1026, 1L]
 	P_VRrun_step = [1L, 0L, 0L, 0L, 1L]
 	
 P_TFrun	= 1L
-	# Snapshot range setting
-	# 	[N0, N1, DN]
-	P_TFrun_snap = [30L, 1026L, 1L]
+	P_TFrun_makebr	= 2L
+		# Snapshot range setting
+		# 	[N0, N1, DN]
+		P_TFrun_snap = [30L, 1026L, 1L]
 
-	# Tree Direction
-	# 	Descendent	- 'desc'
-	# 	Progenitor	- 'prog'
-	P_TFrun_treedir	= 'desc'
+		# Tree Direction
+		# 	Descendent	- 'des'
+		# 	Progenitor	- 'prg'
+		P_TFrun_treedir	= 'des'
 
-	# Merit limit in deciding whether to keep a branch or not 
-	P_TFrun_meritlimit	= 0.001
+		# Merit limit in deciding whether to keep a branch or not 
+		P_TFrun_meritlimit	= 0.001
+
+	# To Connect broken branch
+	P_TFrun_corr	= 2L
+		P_TFrun_corr_snap_f	= 1026L
+		P_TFrun_corr_snap_i	= 100L
+
+		# BRANCH SEARCH BY MERGED BRANCH
+		P_TFrun_corr_nsearch	= 30L
+
+		# BRANCH SEARCH BY BOUND PARTICLES
+		P_TFrun_corr_npart	= 10000L
+		P_TFrun_corr_boxrange	= 200.
+
+		P_TFrun_corr_log	= 2L
+		P_TFrun_corr_masslog	= 2L
+	P_TFrun_save	= 1L
+P_TFrun_corr_nn = 99
 
 P_MKcatalog	= 2L
 	# Make Catalog based on VR + TF data
