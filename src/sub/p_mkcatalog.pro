@@ -1,3 +1,17 @@
+FUNCTION p_mkcatalog_getbr, settings, complete_tree, id
+
+	bid	= LONARR(N_ELEMENTS(id)) - 1L
+	n_tree	= N_ELEMENTS(complete_tree)
+
+	FOR i=0L, n_tree-1L DO BEGIN
+		tmp	= *complete_tree(i)
+		IF tmp.snap(tmp.endind) NE 1026L THEN CONTINUE
+		cut	= WHERE(id EQ tmp.id(tmp.endind),ncut)
+		IF ncut EQ 0L THEN CONTINUE
+		bid(cut)	= i
+	ENDFOR
+	RETURN, bid
+END
 PRO p_mkcatalog, settings
 
 	;;-----
@@ -28,18 +42,48 @@ PRO p_mkcatalog, settings
 	;;-----
 	;; LOAD GALAXY
 	;;-----
-	gal	= f_rdgal(959L, [settings.column_list, 'SFR', 'ABmag'], $
+	gal	= f_rdgal(1026L, [settings.column_list, 'SFR', 'ABmag'], $
 		dir=settings.dir_catalog, horg='g', id0=-1L)
 	n_gal	= N_ELEMENTS(gal.id)
 
-	FOR i=0L, n_gal-1L DO BEGIN
-		dum	= f_getevol(gal.id(i), 959L, [settings.column_list, 'SFR', 'ABmag'], $
+	;;-----
+	;; LOAD Tree
+	;;-----
+	RESTORE, settings.dir_tree + 'l1.sav'
+
+	;;-----
+	;; GET BRANCH
+	;;-----
+	bid	= p_mkcatalog_getbr(settings, complete_tree, gal.id)
+
+	gal	= f_rdgal(761L, [settings.column_list], dir=settings.dir_catalog, $
+		horg='g', id0=-1L)
+	ind	= js_bound(gal.xc, gal.yc, gal.zc, $
+		xr=[-1.,1.]*20. + gal(2).xc, $
+		yr=[-1.,1.]*20. + gal(2).yc, $
+		zr=[-1.,1.]*20. + gal(2).zc)
+
+	FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
+		a	= (*complete_tree(i))
+		cut	= WHERE(a.snap EQ 761, ncut)
+		IF ncut EQ 0L THEN CONTINUE
+		cut	= WHERE(a.id(cut) EQ 719L, ncut)
+		IF ncut GE 1L THEN BREAK
+	ENDFOR
+	STOP
+	img	= draw_gal(3L, 761L, dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, boxrange=20., min=1e4, max=1e8, /raw)
+	cgDisplay, 800, 800
+	cgImage, img
+	STOP
+	for i=0L, n_gal-1L DO BEGIN
+		dum	= f_getevol(complete_tree(bid(i)), $
+			gal.id(i), 1026L, [settings.column_list, 'SFR', 'ABmag'], $
 			horg='g', dir=settings.dir_catalog, /tmerit)
 
-		IF dum.tend LE 300L THEN CONTINUE
+		;IF dum.tend LE 300L THEN CONTINUE
 
-		fname	= '/storage5/NewHorizon/VELOCIraptor/VR_Galaxy/catalog/GAL_' + $
-			STRING(gal.id(i),format='(I6.6)') + '.txt'
+		fname	= settings.dir_catalog + 'VR_Galaxy/catalog/GAL_' + $
+			STRING(gal(i).ID,format='(I6.6)') + '.txt'
 		OPENW, 10, fname
 
 		;;-----
@@ -60,17 +104,17 @@ PRO p_mkcatalog, settings
 
 		PRINTF, 10, HEADER
 
-		FOR j=0L, dum.tend DO BEGIN
+		FOR j=0L, N_ELEMENTS(dum)-1L DO BEGIN
 			PRINTF, 10, $
-				dum.aexp(j), dum.id(j), dum.id_mbp(j), dum.numsubstruct(j), $
-				dum.mvir(j), dum.mass_tot(j), dum.mass_fof(j), dum.mass_200mean(j), $
-				dum.Mass_200crit(j), dum.Efrac(j), dum.rvir(j), dum.r_size(j), $
-				dum.r_200mean(j), dum.r_200crit(j), dum.r_halfmass(j), $
-				dum.r_halfmass_200mean(j), dum.r_halfmass_200crit(j), dum.rmax(j), $
-				dum.xc(j),dum.yc(j),dum.zc(j),dum.vxc(j),dum.vyc(j),dum.vzc(j), $
-				dum.lx(j),dum.ly(j),dum.lz(j),dum.sigV(j),dum.vmax(j),dum.npart(j), $
-				dum.sfr(j,*),dum.abmag(j,0,*), dum.abmag(j,1,*), dum.abmag(j,2,*), $
-				dum.abmag(j,3,*), dum.abmag(j,4,*), $
+				dum(j).aexp , dum(j).id , dum(j).id_mbp , dum(j).numsubstruct , $
+				dum(j).mvir , dum(j).mass_tot , dum(j).mass_fof , dum(j).mass_200mean , $
+				dum(j).Mass_200crit , dum(j).Efrac , dum(j).rvir , dum(j).r_size , $
+				dum(j).r_200mean , dum(j).r_200crit , dum(j).r_halfmass , $
+				dum(j).r_halfmass_200mean , dum(j).r_halfmass_200crit , dum(j).rmax , $
+				dum(j).xc ,dum(j).yc ,dum(j).zc ,dum(j).vxc ,dum(j).vyc ,dum(j).vzc , $
+				dum(j).lx ,dum(j).ly ,dum(j).lz ,dum(j).sigV ,dum(j).vmax ,dum(j).npart , $
+				dum(j).sfr,dum(j).abmag, dum(j).abmag, dum(j).abmag, $
+				dum(j).abmag, dum(j).abmag, $
 				format='(F6.4,4X, I6,4X, I10,4X, I2,4X,' + $
 				'F14.0,4X, F14.0,4X, F14.0,4X, F14.0,4X,' + $
 			       	'F14.0,4X, F6.4,4X, F11.5,4X, F11.5,4X,' + $
@@ -83,6 +127,7 @@ PRO p_mkcatalog, settings
 		CLOSE, 10
 
 		PRINT, i, ' / ', n_gal
+		STOP
 	ENDFOR
 
 

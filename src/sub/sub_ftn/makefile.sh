@@ -35,3 +35,7 @@ gcc -shared -fopenmp find_domain.o find_domain_c2f.o -o find_domain.so -lgfortra
 gfortran -fopenmp -fPIC -c get_contam.f90 -o get_contam.o
 gcc -fopenmp -fPIC -c get_contam_c2f.c -o get_contam_c2f.o
 gcc -shared -fopenmp get_contam.o get_contam_c2f.o -o get_contam.so -lgfortran
+
+gfortran -fopenmp -fPIC -fno-range-check -c get_merit.f90 -o get_merit.o
+gcc -fopenmp -fPIC -c get_merit_c2f.c -o get_merit_c2f.o
+gcc -shared -fopenmp get_merit.o get_merit_c2f.o -o get_merit.so -lgfortran

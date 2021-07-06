@@ -1,7 +1,11 @@
 ##-----
 ## General Settings
 ##-----
+<<<<<<< HEAD
 num_thread	= 10L
+=======
+num_thread	= 40L
+>>>>>>> 2967bac52ce65f1dc69626830c880c7c4504361a
 horg	= 'g'		;; Halo or Galaxy
 verbose	= 1L
 
@@ -11,7 +15,7 @@ effective_resolution	= 4096
 # Tree direction
 # 	'des'	: descent tree
 #	'prg'	: progenitor tree
-treedir	= 'des'
+#treedir	= 'des'
 
 
 ##-----
@@ -39,7 +43,11 @@ dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
+<<<<<<< HEAD
 dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l1/'
+=======
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l3_d/'
+>>>>>>> 2967bac52ce65f1dc69626830c880c7c4504361a
 #dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
 
 # Dir where RAMSES raw data located
@@ -98,18 +106,36 @@ P_VRrun_snap = [0307, 0307, 1L]
 	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	
-P_TFrun	= 2L
-	# Snapshot range setting
-	# 	[N0, N1, DN]
-	P_TFrun_snap = [0701L, 1026L, 1L]
+P_TFrun	= 1L
+	P_TFrun_makebr	= 2L
+		# Snapshot range setting
+		# 	[N0, N1, DN]
+		P_TFrun_snap = [30L, 1026L, 1L]
 
-	# Tree Direction
-	# 	Descendent	- 'desc'
-	# 	Progenitor	- 'prog'
-	P_TFrun_treedir	= 'desc'
+		# Tree Direction
+		# 	Descendent	- 'des'
+		# 	Progenitor	- 'prg'
+		P_TFrun_treedir	= 'des'
 
-	# Merit limit in deciding whether to keep a branch or not 
-	P_TFrun_meritlimit	= 0.001
+		# Merit limit in deciding whether to keep a branch or not 
+		P_TFrun_meritlimit	= 0.001
+
+	# To Connect broken branch
+	P_TFrun_corr	= 2L
+		P_TFrun_corr_snap_f	= 1026L
+		P_TFrun_corr_snap_i	= 100L
+
+		# BRANCH SEARCH BY MERGED BRANCH
+		P_TFrun_corr_nsearch	= 30L
+
+		# BRANCH SEARCH BY BOUND PARTICLES
+		P_TFrun_corr_npart	= 10000L
+		P_TFrun_corr_boxrange	= 200.
+
+		P_TFrun_corr_log	= 2L
+		P_TFrun_corr_masslog	= 2L
+	P_TFrun_save	= 1L
+P_TFrun_corr_nn = 99
 
 	# To Connect broken branches
 	P_TFrun_corr		= 1L
