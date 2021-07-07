@@ -1127,19 +1127,13 @@ END
 ;;-----
 ;; Main Part
 ;;-----
-
 ;;----- REALLOCATE
-PRO p_tfrun_reallocate, tree, complete_tree, gind, evoldum, maxgind
-	maxind	= N_ELEMENTS(complete_tree) + maxgind
+PRO p_tfrun_reallocate_t, tree, gind, evoldum, maxgind
+	maxind	= N_ELEMENTS(tree) + maxgind
 	;; tree
 	tree2	= REPLICATE(tree(0), maxind)
 	tree2(0L:gind)	= tree(0L:gind)
 	tree	= tree2
-
-	;; complete_tree
-	complete_tree2	= PTRARR(maxind)
-	complete_tree2(0L:gind)	= complete_tree(0L:gind)
-	complete_tree	= complete_tree2
 
 	;; evoldum
 	evoldum2	= {ID:LONARR(maxind)-1L, snap:LONARR(maxind)-1L, merit:DBLARR(maxind)-1.d}
@@ -1148,6 +1142,15 @@ PRO p_tfrun_reallocate, tree, complete_tree, gind, evoldum, maxgind
 	evoldum2.merit(0L:gind)	= evoldum.merit(0L:gind)
 	evoldum	= evoldum2
 END
+PRO p_tfrun_reallocate_ct, complete_tree, n_comp, maxgind
+	maxind	= N_ELEMENTS(complete_tree) + maxgind
+	;; complete_tree
+	complete_tree2	= PTRARR(maxind)
+	complete_tree2(0L:n_comp-1L)	= complete_tree(0L:n_comp-1L)
+	complete_tree	= complete_tree2
+END
+
+
 
 PRO p_tfrun, settings
 
@@ -1181,8 +1184,12 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	n_comp	= 0L
 	treelog	= {n_new:0L, n_link:0L, n_link2:0L, n_link3:0L, n_broken:0L, n_all:0L}
 	FOR i=treeset.N0, treeset.N1, treeset.DN DO BEGIN
-		IF N_ELEMENTS(complete_tree) - gind LT 1000L THEN $
-			p_tfrun_reallocate, tree, complete_tree, gind, evoldum, maxgind
+		;;----- REALLOCATE
+		IF N_ELEMENTS(tree) - gind LT 2000L THEN $
+			p_tfrun_reallocate_t, tree, gind, evoldum, maxgind
+		IF N_ELEMENTS(complete_tree) - n_comp LT 2000L THEN $
+			p_tfrun_reallocate_ct, complete_tree, n_comp, maxgind
+
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
