@@ -1158,6 +1158,17 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	n_comp	= 0L
 	treelog	= {n_new:0L, n_link:0L, n_link2:0L, n_link3:0L, n_broken:0L, n_all:0L}
 	FOR i=treeset.N0, treeset.N1, treeset.DN DO BEGIN
+		IF treeset.N0 NE 30L AND $
+			i LT settings.p_TFrun_corr_nn * 10L THEN CONTINUE
+		IF i EQ settings.p_TFrun_corr_nn*10L AND i NE 30L THEN BEGIN
+			RESTORE, settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav'
+		ENDIF
+		IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
+			SAVE, filename=settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav', $
+				treelog, tree, complete_tree, n_comp, gind, evoldum
+			STOP
+		ENDIF
+
 		;IF i LE 600L THEN CONTINUE
 		;IF i EQ 601L THEN RESTORE, settings.dir_tree + 'treetmp_' + $
 		;	STRING(i-1,format='(I4.4)') + '.sav'
@@ -1175,7 +1186,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;;-----
 		IF i EQ treeset.N1 OR snap_next EQ -1L THEN BEGIN
 			g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1L, $
-				dir=settings.dir_save, horg=settings.horg)
+				dir=settings.dir_catalog, horg=settings.horg)
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
 				tree, evoldum, gind, g_curr, snap_curr
 
@@ -1193,17 +1204,17 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 			STRING(snap_curr,format='(I4.4)') + 'VELOCIraptor.tree'
 		t_curr	= p_tfrun_rdhdf5(treefname, treeset)
 		g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1, $
-			dir=settings.dir_save, horg=settings.horg)
+			dir=settings.dir_catalog, horg=settings.horg)
 
 		g_next	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
-			dir=settings.dir_save, horg=settings.horg)
+			dir=settings.dir_catalog, horg=settings.horg)
 
 		IF t_curr.nlink GE 2L THEN BEGIN
 			FOR i2=0L, t_curr.nlink-2L DO BEGIN
 				snap_next	= p_tfrun_findnextsnap(settings, snap_next)
 				IF snap_next EQ -1L THEN CONTINUE
 				g_dum	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
-					dir=settings.dir_save, horg=settings.horg)
+					dir=settings.dir_catalog, horg=settings.horg)
 				g_next	= [g_next, g_dum]
 			ENDFOR
 		ENDIF
@@ -1246,11 +1257,11 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 
-		IF i MOD 100 EQ 0L THEN BEGIN
+		;IF i MOD 100 EQ 0L THEN BEGIN
 
-			SAVE, filename=settings.dir_tree + 'treetmp_' + $
-				STRING(i,format='(I4.4)') + '.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
-		ENDIF
+		;	SAVE, filename=settings.dir_tree + 'treetmp_' + $
+		;		STRING(i,format='(I4.4)') + '.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
+		;ENDIF
 
 	ENDFOR
 
