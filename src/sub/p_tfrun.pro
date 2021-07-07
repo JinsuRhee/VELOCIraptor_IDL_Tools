@@ -948,20 +948,20 @@ PRO p_TFRun_corr, settings, complete_tree
 
 	;;----- CONNECT
 	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
-
-		IF settings.p_TFrun_corr_nn NE 0L AND $
-			i LT settings.p_TFrun_corr_nn * 10L THEN CONTINUE
-		IF i EQ settings.p_TFrun_corr_nn* 10L AND i NE 0L THEN BEGIN
-			RESTORE, settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav'
-		ENDIF
-		IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
+		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
+			CONTINUE
+		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
+			IF settings.p_TFrun_corr_nn NE 0L THEN BEGIN
+				RESTORE, settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav'
+			ENDIF
+		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
 			SAVE, filename=settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav', $
 			complete_tree, corr_idlist
-			IF i NE 1000L THEN STOP
+			STOP
 		ENDIF
 
-		;IF gal(i).ID LE 232L THEN CONTINUE
 
+		;IF gal(i).ID LE 232L THEN CONTINUE
 
 		IF bid(i) LT 0L THEN CONTINUE
 		tree	= *complete_tree(bid(i))
@@ -1127,6 +1127,28 @@ END
 ;;-----
 ;; Main Part
 ;;-----
+
+;;----- REALLOCATE
+PRO p_tfrun_reallocate, tree, complete_tree, gind, evoldum, maxgind
+	maxind	= N_ELEMENTS(complete_tree) + maxgind
+	;; tree
+	tree2	= REPLICATE(tree(0), maxind)
+	tree2(0L:gind)	= tree(0L:gind)
+	tree	= tree2
+
+	;; complete_tree
+	complete_tree2	= PTRARR(maxind)
+	complete_tree2(0L:gind)	= complete_tree(0L:gind)
+	complete_tree	= complete_tree2
+
+	;; evoldum
+	evoldum2	= {ID:LONARR(maxind)-1L, snap:LONARR(maxind)-1L, merit:DBLARR(maxind)-1.d}
+	evoldum2.ID(0L:gind)	= evoldum.ID(0L:gind)
+	evoldum2.snap(0L:gind)	= evoldum.snap(0L:gind)
+	evoldum2.merit(0L:gind)	= evoldum.merit(0L:gind)
+	evoldum	= evoldum2
+END
+
 PRO p_tfrun, settings
 
 IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
@@ -1134,19 +1156,20 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	;; Basic settings
 	;;-----
 	treeset	= p_tfrun_set(settings)
-	maxgind	= 100000L
+	maxgind	= 10000L
+
 	;;-----
 	;; Allocate Memory
 	;;-----
 	dumarr	= LONARR(ABS(treeset.N1-treeset.N0)+1L)-1L
-	dumarr2	= LONARR(1000L) - 1L
+	dumarr2	= LONARR(5000L) - 1L
 	dumstr	= {ID:dumarr, snap:dumarr, $
 		p_snap:dumarr, p_ID:dumarr, p_merit:DOUBLE(dumarr), $
 		d_snap:dumarr, d_ID:dumarr, endind:-1L, $
 		m_ID:dumarr2, m_snap:dumarr2, m_merit:DOUBLE(dumarr2), m_BID:dumarr2, $
 		numprog:1L}
 	tree	= REPLICATE(dumstr, maxgind)
-	complete_tree	= PTRARR(100000L)
+	complete_tree	= PTRARR(maxgind)
 
 	evoldum	= {ID:LONARR(maxgind)-1L, snap:LONARR(maxgind)-1L, merit:DBLARR(maxgind)-1.d}
 
@@ -1158,20 +1181,21 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	n_comp	= 0L
 	treelog	= {n_new:0L, n_link:0L, n_link2:0L, n_link3:0L, n_broken:0L, n_all:0L}
 	FOR i=treeset.N0, treeset.N1, treeset.DN DO BEGIN
-		IF treeset.N0 NE 30L AND $
-			i LT settings.p_TFrun_corr_nn * 10L THEN CONTINUE
-		IF i EQ settings.p_TFrun_corr_nn*10L AND i NE 30L THEN BEGIN
-			RESTORE, settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav'
-		ENDIF
-		IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
-			SAVE, filename=settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav', $
+		IF N_ELEMENTS(complete_tree) - gind LT 1000L THEN $
+			p_tfrun_reallocate, tree, complete_tree, gind, evoldum, maxgind
+		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
+			CONTINUE
+		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
+			IF settings.p_TFrun_corr_nn NE 3L THEN BEGIN
+				RESTORE, settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav'
+			ENDIF
+		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
+			SAVE, filename=settings.dir_tree + $
+				'tree_' + STRING(i,format='(I4.4)') + '.sav', $
 				treelog, tree, complete_tree, n_comp, gind, evoldum
 			STOP
 		ENDIF
 
-		;IF i LE 600L THEN CONTINUE
-		;IF i EQ 601L THEN RESTORE, settings.dir_tree + 'treetmp_' + $
-		;	STRING(i-1,format='(I4.4)') + '.sav'
 		;;-----
 		;; SNAPSHOT CHECK
 		;;-----
@@ -1260,13 +1284,6 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 			' / Gind : ' + STRTRIM(gind,2)
 
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
-
-		;IF i MOD 100 EQ 0L THEN BEGIN
-
-		;	SAVE, filename=settings.dir_tree + 'treetmp_' + $
-		;		STRING(i,format='(I4.4)') + '.sav', treelog, tree, complete_tree, n_comp, gind, evoldum
-		;ENDIF
-
 	ENDFOR
 
 	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree
