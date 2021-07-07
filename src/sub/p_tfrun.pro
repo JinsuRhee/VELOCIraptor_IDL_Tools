@@ -1175,7 +1175,11 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;;-----
 		;; SNAPSHOT CHECK
 		;;-----
-		dumfname	= settings.dir_catalog + 'snap_' + STRING(i,format='(I4.4)')
+		dumfname	= settings.dir_catalog
+		IF settings.horg EQ 'h' THEN dumfname += 'Halo/'
+		IF settings.horg EQ 'g' THEN dumfname += 'Galaxy/'
+		dumfname += 'snap_' + STRING(i,format='(I4.4)')
+
 		IF STRLEN(FILE_SEARCH(dumfname)) LE 5L THEN CONTINUE
 
 		snap_curr	= i
