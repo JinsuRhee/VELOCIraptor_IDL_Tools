@@ -8,8 +8,8 @@
 FUNCTION p_tfrun_getpid, settings, id0, snap0
 
 	fname	= settings.dir_catalog
-	IF settings.horg EQ 'g' THEN fname = fname + 'VR_Galaxy/snap_'
-	IF settings.horg EQ 'h' THEN fname = fname + 'VR_Halo/snap_'
+	IF settings.horg EQ 'g' THEN fname = fname + 'Galaxy/VR_Galaxy/snap_'
+	IF settings.horg EQ 'h' THEN fname = fname + 'Halo/VR_Halo/snap_'
 	fname	= fname + STRING(snap0,format='(I4.4)') + '/GAL_' + $
 		STRING(id0,format='(I6.6)') + '.hdf5'
 
@@ -637,7 +637,8 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 		STOP
 	ENDIF
 
-	cut	= cut(0)
+	cut2	= WHERE(tree.snap(cut) - tree.snap(0) GT 20.)
+	cut	= cut(cut2(0))
 
 	;; OUTPUT
 	snap0	= evol(cut).snapnum
@@ -654,7 +655,7 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 END
 FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 
-	nsearch	= 3L
+	nsearch	= 4L
 	sfact	= 1.0
 	;;----- First Get Evolution of the target galaxy
 	mass0	= 0.
@@ -691,10 +692,11 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		IF snap EQ -1L THEN CONTINUE
 
 		;;----- READ GAL AT THIS SNAPSHOT
-		gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
-			id0=-1L, dir=settings.dir_catalog, $
-			horg=settings.horg)
+		;gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
+		;	id0=-1L, dir=settings.dir_catalog, $
+		;	horg=settings.horg)
 
+		gal	= f_rdgalquick(snap, dir=settings.dir_catalog, horg=settings.horg)
 		;;---- READ INFO
 		rd_info, info0, file='/storage6/NewHorizon/output_' + $
 			STRING(snap,format='(I5.5)') + '/info_' + $
@@ -715,13 +717,14 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 			(gal.yc - quantity.pos(1))^2 + $
 			(gal.zc - quantity.pos(2))^2
 		d3d_s	= d3d(SORT(d3d))
-		dcut	= d3d_s(50<(ngal-1L))
+		;dcut	= d3d_s(50<(ngal-1L))
+		dcut	= d3d_s(LONG(ngal/10))
 
 		FOR j=0L, ngal-1L DO BEGIN
 
 			;; SKIP CRITERIA
 			;;----- BY MASS?
-			;IF ABS(ALOG10(quantity.mass) - ALOG10(gal(j).Mass_tot)) GT 2. THEN CONTINUE
+			IF ABS(ALOG10(quantity.mass) - ALOG10(gal(j).Mass_tot)) GT 2. THEN CONTINUE
 
 			;;----- BY TIME * SPEED
 			;;d3d	= (gal(j).xc - quantity.pos(0))^2 + $
@@ -787,8 +790,8 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 			IF tmp.id(cut) EQ id(j) THEN BEGIN
 				PRINT, '%123123-----'
 				PRINT, '	CONNECTION DONE BY DIRECTLY COMPUTING MERIT SCORES'
-				PRINT, '	ID = ' + STRING(tree.id(0), format='(I4.4)') + ' ---> ' + $
-					' ID = ' + STRING(id(j), format='(I4.4)')
+				PRINT, '	ID = ' + STRING(tree.id(0), format='(I6.6)') + ' ---> ' + $
+					' ID = ' + STRING(id(j), format='(I6.6)')
 				PRINT, '	SS = ' + STRING(tree.snap(0), format='(I4.4)') + '      ' + $
 					' SS = ' + STRING(snap(j), format='(I4.4)')
 				PRINT, '	MERIT SCORE = ', merit(j)
@@ -930,7 +933,6 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 	cgOplot, evol((cut-2L)>0:cut+2L).snapnum, evol((cut-2L)>0:cut+2L).mass_tot, $
 		linestyle=0, thick=2, color='red'
 
-	STOP
 
 END
 
@@ -940,8 +942,9 @@ PRO p_TFRun_corr, settings, complete_tree
 
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
-	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	;gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
+	;	horg=settings.horg, id0=-1L)
+	gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
 	corr_idlist	= LONARR(N_ELEMENTS(gal))-1L
@@ -959,10 +962,7 @@ PRO p_TFRun_corr, settings, complete_tree
 			complete_tree, corr_idlist
 			STOP
 		ENDIF
-
-
 		;IF gal(i).ID LE 232L THEN CONTINUE
-
 		IF bid(i) LT 0L THEN CONTINUE
 		tree	= *complete_tree(bid(i))
 		tree0	= tree
@@ -1225,9 +1225,13 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
 				tree, evoldum, gind, g_curr, snap_curr
 
-			FOR j=0L, gind DO $
+			FOR j=0L, gind DO BEGIN
+				IF N_ELEMENTS(complete_tree) - n_comp LT 2000L THEN $
+					p_tfrun_reallocate_ct, complete_tree, n_comp, maxgind
+
 				IF ABS(tree(j).snap(0)-snap_curr) GE 10L THEN $
 					p_tfrun_finishbranch, settings, tree, complete_tree, n_comp, j, 'main'
+			ENDFOR
 
 			complete_tree	= complete_tree(0L:n_comp-1L)
 			BREAK
@@ -1293,6 +1297,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 	ENDFOR
 
+	STOP
 	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree
 	STOP
 ENDIF

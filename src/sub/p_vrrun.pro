@@ -9,8 +9,10 @@ PRO P_VRrun, settings
 		n_snap	= i
 
 		PRINT, '	-----', i, ' is starting'
-		dir	= settings.dir_catalog + $
-			settings.dir_catalog_pre + $
+		dir	= settings.dir_catalog; + $
+		IF settings.horg EQ 'h' THEN dir += 'Halo/'
+		IF settings.horg EQ 'g' THEN dir += 'Galaxy/'
+		dir	+= settings.dir_catalog_pre + $
 			STRING(n_snap,format='(I4.4)') + $
 			settings.dir_catalog_suf
 

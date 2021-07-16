@@ -49,7 +49,10 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	;; Path Settings
 	;;-----
-	dir_data	= settings.dir_catalog + $
+	IF settings.horg EQ 'h' THEN dum = 'Halo/'
+	IF settings.horg EQ 'g' THEN dum = 'Galaxy/'
+
+	dir_data	= settings.dir_catalog + dum + $
 		settings.dir_catalog_pre + STRING(n_snap,format='(I4.4)') + $
 		settings.dir_catalog_suf + '/'
 

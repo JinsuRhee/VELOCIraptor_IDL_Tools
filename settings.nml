@@ -1,12 +1,8 @@
 ##-----
 ## General Settings
 ##-----
-<<<<<<< HEAD
-num_thread	= 10L
-=======
 num_thread	= 40L
->>>>>>> 2967bac52ce65f1dc69626830c880c7c4504361a
-horg	= 'g'		;; Halo or Galaxy
+horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
 # effective resolution equal to the one in the configuration file
@@ -37,18 +33,14 @@ R_longint	= 0L
 # Dir where VR output located
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
 #dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
-dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
-#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo/'
+#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
+dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
 
 # Dir where TF output located
-<<<<<<< HEAD
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l1/'
-=======
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l3_d/'
->>>>>>> 2967bac52ce65f1dc69626830c880c7c4504361a
-#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
+#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l3_d/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l3_d/'
 
 # Dir where RAMSES raw data located
 dir_raw		= '/storage6/NewHorizon/'
@@ -56,7 +48,7 @@ dir_raw		= '/storage6/NewHorizon/'
 # Dir where HDF5 results are saved
 # 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
 #dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
-dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
+#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
 #dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
 ##-----
@@ -91,11 +83,11 @@ clump_mfrac	= 0.5
 ##-----
 ## Procedure
 ##-----
-P_VRrun	= 1L
+P_VRrun	= 2L
 	# Snapshot range setting
 	# 	[N0, N1, DN]
 	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [0307, 0307, 1L]
+P_VRrun_snap = [0243, 0243, 1L]
 
 	# Run Procedure
 	#	0	- Skip the procedure (values are filled with dummy values)
@@ -104,7 +96,7 @@ P_VRrun_snap = [0307, 0307, 1L]
 	#
 	#	[read raw data, read ID, ID matching, Compute Galaxy Prop, Save the data]
 	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
-	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
+	P_VRrun_step = [1L, 1L, 0L, 0L, 1L]
 	
 P_TFrun	= 1L
 	P_TFrun_makebr	= 2L
@@ -121,7 +113,7 @@ P_TFrun	= 1L
 		P_TFrun_meritlimit	= 0.001
 
 	# To Connect broken branch
-	P_TFrun_corr	= 2L
+	P_TFrun_corr	= 1L
 		P_TFrun_corr_snap_f	= 1026L
 		P_TFrun_corr_snap_i	= 100L
 
@@ -135,12 +127,7 @@ P_TFrun	= 1L
 		P_TFrun_corr_log	= 2L
 		P_TFrun_corr_masslog	= 2L
 	P_TFrun_save	= 1L
-P_TFrun_corr_nn = 99
-
-	# To Connect broken branches
-	P_TFrun_corr		= 1L
-		P_TFrun_corr_snap0	= 1026L
-		P_TFrun_corr_nsearch	= 10L
+P_TFrun_corr_nn = 009
 
 P_MKcatalog	= 2L
 	# Make Catalog based on VR + TF data

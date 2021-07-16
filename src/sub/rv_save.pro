@@ -7,10 +7,10 @@ IF run EQ 0L THEN RETURN
 	;;-----
 	;; Make a Directory?
 	;;----
-	IF settings.horg EQ 'g' THEN dum = 'VR_Galaxy/'
-	IF settings.horg EQ 'h' THEN dum = 'VR_Halo/'
+	IF settings.horg EQ 'g' THEN dum = 'Galaxy/VR_Galaxy/'
+	IF settings.horg EQ 'h' THEN dum = 'Halo/VR_Halo/'
 
-	fname	= settings.dir_save + dum + 'snap_' + STRING(n_snap,format='(I4.4)')
+	fname	= settings.dir_catalog + dum + 'snap_' + STRING(n_snap,format='(I4.4)')
 
 	file_exist	= FILE_SEARCH(fname)
 	IF STRLEN(file_exist) LE 5L THEN SPAWN, 'mkdir ' + fname
