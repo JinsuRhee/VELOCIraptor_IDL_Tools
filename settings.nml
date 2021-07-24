@@ -1,118 +1,165 @@
 ##-----
 ## General Settings
+##
+##	num_thread	= Integer
+##		# of OMP Threads used in fortran routines
+##	horg		= String
+##		run for halo ('h') or for galaxy ('g') catalog
+##	verbose		= Integer
+##		silent (0) talkertive (1)
+##
 ##-----
+
 num_thread	= 40L
 horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
-# effective resolution equal to the one in the configuration file
-effective_resolution	= 4096
-
-# Tree direction
-# 	'des'	: descent tree
-#	'prg'	: progenitor tree
-#treedir	= 'des'
-
-
 ##-----
 ## RAMSES Related
+##
+##	effective_resolution = Integer
+##		For zoomed simulations. The initial AMR level of zoomed-region
+##
+##	R_orgver		= Integer
+##		Particle type specification. Old version (0). New version with family types (1)
+##	R_longint		= Integer
+##		Particle ID type. 4Byte Long Integer(0). 8Byte Long Integer(1)
 ##-----
-# Particle Format
-# 	0L - org ver
-# 	1L - new ver (use family)
-R_orgver	= 0L
 
-# Particle ID type
-# 	0L - long Int
-# 	1L - long long int
+effective_resolution	= 4096
+R_orgver	= 0L
 R_longint	= 0L
 
 ##-----
 ## Path Settings
+##
+##	dir_catalog = STRING
+##		Path for the VR catalog. Catalog data (e.g., *.dat.properties0) should be located in
+##		"dir_catalog + dir_catalog_pre + #(snapshot number) + dir_catalog_suf/*.dat.properties0"
+##
+##	dir_tree = STRING
+##		Path for the TreeFrog catalog.
+##	dir_raw = STRING
+##		Path for the RAMSES rawdata. Rawdata should be located in
+##		"dir_raw + '/output_#####/part_#####.out"
 ##-----
-# Dir where VR output located
-#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy/'
-#dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Galaxy3/'
-#dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
+
 dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
-
-# Dir where TF output located
-#dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/tree/l3_d/'
 dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l3_d/'
-
-# Dir where RAMSES raw data located
 dir_raw		= '/storage6/NewHorizon/'
-
-# Dir where HDF5 results are saved
-# 	default - dir_save + 'VR_Galaxy(or Halo)/snap_*'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Galaxy2/'
-#dir_save	= '/storage5/NewHorizon/VELOCIraptor/Halo/'
 
 ##-----
 ## DATA Settings
+##
+##	column_list	= STRING ARRAY
+##		list of columns that you want to extract from the raw catalog
+##	flux_list	= STRING ARRAY
+##		list of bands that you want to compute photometries. Current version only provides
+##		Sloan bands (should be tested!)
+##	Mag_r		= FLOAT ARRAY
+##		Aperture size in Reff unit. (-1) indicates the whole radius.
+##	SFR_t		= FLOAT ARRAY
+##		Time range for measuring SFR in Gyr unit
+##	SFR_r		= FLOAT ARRAY
+##		Aperture size in Reff unit. (-1) indicates the whole radius
+##	CONF_r		= FLOAT ARRAY
+##		Aperture size to compute the fraction of contamination particle (low res DM particles).
+##		(-1) indicates the whole radius
+##	clump_mfrac	= FLOAT
+##		To define SFR clump.
+##		If SFR * SFR timebin > clump_mfrac * Mass then, the objects are tagged
+##		as clump. (Shown in the .hdf5 format as isclump = 1 )
+##		SFR_clumpcorr is not done yet
 ##-----
-#	Column list from the raw catalog
-column_list	= ['ID', 'ID_mbp', 'hostHaloID', 'numSubStruct', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Efrac', 'Mass_200crit', 'Rvir', 'R_size', 'R_200mean', 'R_200crit', 'R_HalfMass', 'R_HalfMass_200mean', 'R_HalfMass_200crit', 'Rmax', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'Vmax', 'npart']
 
-#	Flux List
-#		Mag_r - Aperture size in Rhalfmass unit for measuring magnitude
+column_list	= ['ID', 'ID_mbp', 'hostHaloID', 'numSubStruct', 'Structuretype', 'Mvir', 'Mass_tot', 'Mass_FOF', 'Mass_200mean', 'Efrac', 'Mass_200crit', 'Rvir', 'R_size', 'R_200mean', 'R_200crit', 'R_HalfMass', 'R_HalfMass_200mean', 'R_HalfMass_200crit', 'Rmax', 'Xc', 'Yc', 'Zc', 'VXc', 'VYc', 'VZc', 'Lx', 'Ly', 'Lz', 'sigV', 'Vmax', 'npart']
 #flux_list       = ['u', 'g', 'r', 'i', 'z', 'FUV', 'NUV', 'IR_F105W', 'IR_F125W', 'IR_F160W']
 flux_list       = ['u', 'g', 'r', 'i', 'z']
 Mag_r= [-1.0, 0.1, 1.0]
-
-#	SFR-related options
-#		SFR_t - Time range for measuring SFR in Gyr
-#		SFR_r - aperture size in Rhalfmass unit (-1 means total)
 SFR_t= [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 1.00, 1.00, 1.00]
 SFR_r= [-1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00, -1.0, 0.10, 1.00]
-#						;; _r = aperture cut (negative value indicates total)
-
-#	Contamination Fraction Options
-#		CONF_r - Aperture size in Rhalf mass unit for measuring contamination fraction
 CONF_r	= [1.0, 5.0, 10.0]
-
-#	Clump-Find options
-#		Currently, clump is an object of which X of their mass is formed within in a short time
-#		That is, if SFR > mass / SFR timebin * X
-#		Clumps are merged into its host galaxies
 clump_mfrac	= 0.5
 
 ##-----
 ## Procedure
+##
+##	P_VRrun		= INTEGER
+##		Run on (1L) or off (2L) for the VR post-processing.
+##		If you want to run multiple snapshots, you're recommanded to run the code by runhalo.sh
+##		(Check the script file whether "sed" tageted line is correct).
+##		This is because IDL is misteriously stuck when writing/reading too many hdf5 files. 
+##	P_VRrun_snap	= INTEGER ARRAY
+##		snapshot ranges [N0, N1, DN]
+##	P_VRrun_step	= INTEGER ARRAY
+##		Run set for each step.
+##		0	- Skip the procedure (values are filled with dummy values)
+##		1	- Soft Run (if there is pre-run data, just load the result)
+##		2	- Force Run (run the procedure and overlap the pre-run data)
+##
+##		[read raw data, read ID, ID matching, Compute Galaxy Prop, Save the data]
+##
+##	P_TFrun		= INTEGER
+##		Run on (1L) or off (2L) for the TREEFROG post-processing.
+##		Before running, the numbers in TREEFROG hdf5 files should match with the snapshot numbers.
+##		For example, tree.snapshot_XXXXVELOCIraptor.tree is the data for the XXXX snapshot.
+##	P_TFrun_makebr	= INTEGER
+##		Run on (1L) or off (2L) for making branches
+##	P_TFrun_snap	= INTEGER ARRAY
+##		snapshot ranges [N0, N1, DN]
+##	P_TFrun_treedir	= STRING
+##		Making branch in the direction of descendants ('des') or progenitor ('prg')
+##		Only desncendant trees are tested for now.
+##	P_TFrun_meritlimit	= FLOAT
+##		Merit limit to decide whether keeping a branch or not
+##
+##	------
+##	-- NOTES
+##	-----
+##		P_TFrun_corr routine reads lots of hdf5 file so that IDL routine is sometimes stuck.
+##		The user is highly recommanded run this procedure by executing runtreecor.sh
+##		Check whether "sed" targets the correct line.
+##
+##
+##	P_TFrun_corr	= INTEGER
+##		Run on (1L) / off (2L) for the correcting branches
+##		Sometimes, VR mis-identifies merging galaxies so that tree building for those galaxies
+##		are frequently faild.
+##		This routine artifically finds their descendants by searching previous snapshots.
+##		Objects that have enough merit score is connected to the broken branch.
+##	P_TFrun_snap_f	= INTEGER
+##	P_TFrun_snap_i	= INTEGER
+##		Starting (_f) and ending (_i) snapshot for correcting branches.
+##		Starting from _f, if the tree end is lower then _i, the correction is finished.
+##	P_TFrun_corr_nsearch	= INTEGER
+##		Not used anymore. The snapshot numbers when searching merged branches.
+##	P_TFrun_corr_npart	= INTEGER
+##	P_TFrun_corr_boxrange	= FLOAT
+##		Not used any more. When finds descendants by using bound particles.
+##	P_TFrun_corr_log	= INTEGER
+##		ON(1L) / OFF(2L)
+##		To test whether artifical connection works well or not.
+##	P_TFrun_corr_masslog	= INTEGER
+##		ON(1L) / OFF(2L)
+##		To test whether artifical connection works well or not.
+##	P_TFrun_save		= INTEGER
+##		ON(1L) / OFF(2L)
+##		Save all branches and catalog for galaxies at the last snapshot
+##	P_TFrun_corr_nn		= INTEGER
+##		Don't have to set this.
 ##-----
-P_VRrun	= 2L
-	# Snapshot range setting
-	# 	[N0, N1, DN]
-	#P_VRrun_snap = [50L, 55L, 1L]		;;-- Snapshot Range, Interval
-P_VRrun_snap = [0243, 0243, 1L]
 
-	# Run Procedure
-	#	0	- Skip the procedure (values are filled with dummy values)
-	#	1	- Soft Run (if there is pre-run data, just load the result)
-	#	2	- Force Run (run the procedure and overlap the pre-run data)
-	#
-	#	[read raw data, read ID, ID matching, Compute Galaxy Prop, Save the data]
-	#P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
-	P_VRrun_step = [1L, 1L, 0L, 0L, 1L]
+P_VRrun	= 2L
+P_VRrun_snap = [0243, 0243, 1L]
+	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	
 P_TFrun	= 1L
 	P_TFrun_makebr	= 2L
-		# Snapshot range setting
-		# 	[N0, N1, DN]
 		P_TFrun_snap = [30L, 1026L, 1L]
-
-		# Tree Direction
-		# 	Descendent	- 'des'
-		# 	Progenitor	- 'prg'
 		P_TFrun_treedir	= 'des'
-
-		# Merit limit in deciding whether to keep a branch or not 
 		P_TFrun_meritlimit	= 0.001
-
-	# To Connect broken branch
 	P_TFrun_corr	= 1L
 		P_TFrun_corr_snap_f	= 1026L
 		P_TFrun_corr_snap_i	= 100L
@@ -129,16 +176,25 @@ P_TFrun	= 1L
 	P_TFrun_save	= 1L
 P_TFrun_corr_nn = 025
 
-P_MKcatalog	= 2L
-	# Make Catalog based on VR + TF data
-	#
+#P_MKcatalog	= 2L
+#	# Make Catalog based on VR + TF data
+#	#
+
 ##-----
 ## LIST OF CALL FUNCTIONS
 ##-----
-P_test1	= 2L
-##	get_gyr.pro
+##	draw_gal.pro
+##	f_rdgal.pro
+##	f_rdptcl.pro
+##	f_rdamr.pro
+##	...
 ##		= get_gyr(conformal time, info.txt dir, lib dir, num_thread, n_snap)
 ##		> Conformal time to Gyr and Sfactor
 ##
 ##	get_flux.pro
-##		= get_flux(mass (solar), metal, gyr, 
+##		= get_flux(mass (solar), metal, gyr,
+
+##-----
+## Some tests...
+##
+P_test1	= 2L
