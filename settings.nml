@@ -127,7 +127,7 @@ P_TFrun	= 1L
 		P_TFrun_corr_log	= 2L
 		P_TFrun_corr_masslog	= 2L
 	P_TFrun_save	= 1L
-P_TFrun_corr_nn = 009
+P_TFrun_corr_nn = 025
 
 P_MKcatalog	= 2L
 	# Make Catalog based on VR + TF data
