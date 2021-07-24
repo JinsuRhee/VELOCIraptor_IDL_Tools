@@ -37,6 +37,7 @@ IF run EQ 2L THEN BEGIN
 	abmag		= DBLARR(n_gal, n_flux, n_magap)
 	SFR		= DBLARR(n_gal, n_sfr)
 
+	confrac		= DBLARR(n_gal, N_ELEMENTS(settings.CONF_r)) - 1.0d8
 	PRINT, '        %%%%% GProp - MEMORY ALLOCATED'
 
 	;;-----
@@ -59,24 +60,26 @@ IF run EQ 2L THEN BEGIN
 		SFR_T=settings.SFR_T, SFR_R=settings.SFR_R, $
 		lib=settings.dir_lib, num_thread=settings.num_thread)
 
-	output	= CREATE_STRUCT('SFR', SFR)
-		;tmp0	= 'output2 = CREATE_STRUCT('
+	;;-----
+	;; CLUMP CORRECTION
+	;;-----
+	cut	= WHERE(SFR(*,0) GT $
+		rawdata.mass_tot / (settings.SFR_T(0)*1e9) * settings.clump_mfrac, ncut)
+	SFR2	= SFR
+	isclump	= LONARR(N_ELEMENTS(rawdata.id)) - 1L
+	IF ncut GE 1L THEN BEGIN
+		isclump(cut)	= 1L
 
-		;FOR i=0L, n_sfr-1L DO BEGIN
-		;	tmp = 'SFR'
-		;	IF(SFR_R(i) GT 0) THEN tmp = tmp + $
-		;		'_' + string(long(SFR_r(i)),format='(I1.1)') + '_'
-		;	IF(SFR_R(i) LT 0) THEN tmp = tmp + '_T_'
-
-		;	tmp	= tmp + string(long(SFR_T(i)*1000.),format='(I4.4)')
-
-		;	tmp0	= tmp0 + '"' + tmp + '"' + $
-		;		', SFR(*,' + strtrim(i,2) + ')'
-		;	IF i LT n_sfr-1L THEN tmp0 = tmp0 + ','
-		;ENDFOR
-		;tmp0	= tmp0 + ')'
-		;void	= execute(tmp0)
-
+		FOR i=0L, ncut-1L DO BEGIN
+			ind	= cut(i)
+			hostid	= rawdata.hostHaloID(ind)
+			IF hostid LT 0L THEN CONTINUE
+			cut2	= WHERE(rawdata.ID EQ hostid)
+			SFR2(cut2,*)	+= SFR(ind,*)
+			SFR2(ind,*)	= 0.
+		ENDFOR
+	ENDIF
+	output	= CREATE_STRUCT('SFR', SFR, 'SFR_clumpcorr', SFR2, 'isclump', isclump)
 	PRINT, '        %%%%% GProp - SFRs are calculated'
 
 	;;-----
@@ -93,6 +96,14 @@ IF run EQ 2L THEN BEGIN
 	output	= CREATE_STRUCT(output, 'SFR_R', settings.SFR_R, 'SFR_T', settings.SFR_T, $
 		'MAG_R', settings.MAG_R)
 	PRINT, '        %%%%% GProp - Magnitudes are calculated'
+
+	;;-----
+	;; Contamination Fraction
+	;;-----
+	confrac	= get_cfrac(settings, rawdata, confrac, n_snap, horg=settings.horg)
+
+	output	= CREATE_STRUCT(output, 'CONFRAC', confrac)
+	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
 
 	SAVE, filename=dir_data + 'rv_gprop.sav', output
 	RETURN, PTR_NEW(output,/no_copy)

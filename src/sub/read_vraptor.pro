@@ -30,7 +30,7 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	data	= {$
 		rv_raw		: PTR_NEW(1), $
-		rv_tree		: PTR_NEW(1), $
+		;rv_tree		: PTR_NEW(1), $
 		rv_id		: PTR_NEW(1), $
 		rv_ptmatch	: PTR_NEW(1), $
 		rv_gprop	: PTR_NEW(1)}
@@ -39,16 +39,20 @@ PRO read_vraptor, settings, n_snap
 	;; Compile all procedures first
 	;;-----
 	void	= rv_RawCatalog	(settings, ' ', run=0L)
-	void	= rv_ReadTree	(settings, ' ', ' ', 1L, run=0L)
+	;void	= rv_ReadTree	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_ReadID	(settings, ' ', ' ', run=0L)
 	void	= rv_PTMatch	(settings, ' ', ' ', 1L, run=0L)
 	void	= rv_GProp	(settings, ' ', ' ', 1L, run=0L)
+	void	= rv_Hprop	(settings, ' ', ' ', 1L, run=0L)
 	rv_save, settings, ' ', 1L, run=0L
 
 	;;-----
 	;; Path Settings
 	;;-----
-	dir_data	= settings.dir_catalog + $
+	IF settings.horg EQ 'h' THEN dum = 'Halo/'
+	IF settings.horg EQ 'g' THEN dum = 'Galaxy/'
+
+	dir_data	= settings.dir_catalog + dum + $
 		settings.dir_catalog_pre + STRING(n_snap,format='(I4.4)') + $
 		settings.dir_catalog_suf + '/'
 
@@ -65,16 +69,16 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	;; Read Tree
 	;;-----
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
-	data.rv_tree	= rv_ReadTree(settings, dir_data, data, $
-		n_snap, run=settings.P_VRrun_step(1))
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
+	;IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Tree...', /bef
+	;data.rv_tree	= rv_ReadTree(settings, dir_data, data, $
+	;	n_snap, run=settings.P_VRrun_step(1))
+	;IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
 	;; Read Particle IDs
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Reading Particle IDs...', /bef
-	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(2))
+	data.rv_id	= rv_ReadID(settings, dir_data, data, run=settings.P_VRrun_step(1))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
@@ -82,22 +86,26 @@ PRO read_vraptor, settings, n_snap
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Particle Matching...', /bef
 	data.rv_ptmatch	= rv_PTMatch(settings, dir_data, data, $
-		n_snap, run=settings.P_VRrun_step(3))
+		n_snap, run=settings.P_VRrun_step(2))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
-	;; Galaxy Property
+	;; Group Property
 	;;-----
-	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Galaxy Property...', /bef
-	data.rv_gprop	= rv_GProp(settings, dir_data, data, $
-		n_snap, run=settings.P_VRrun_step(4))
+	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'Compute Group Property...', /bef
+	IF settings.horg EQ 'g' THEN $
+		data.rv_gprop	= rv_Gprop(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(3))
+	IF settings.horg EQ 'h' THEN $
+		data.rv_gprop	= rv_Hprop(settings, dir_data, data, $
+		n_snap, run=settings.P_VRrun_step(3))
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
 	;; HDF5 output
 	;;-----
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, 'HDF5 Saving...', /bef
-	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(5)
+	rv_save, settings, data, n_snap, run=settings.P_VRrun_step(4)
 	IF settings.verbose EQ 1L THEN read_vraptor_msg, ' ', /aft
 
 	;;-----
@@ -115,5 +123,13 @@ PRO read_vraptor, settings, n_snap
 		  PRINT, '***** read_vraptor.pro: There is a Nan value in the arrays ( ' + strtrim(tagnm(i),2) + ' )'
 	endfor
 
+	;;-----
+	;; CLEAR POINTER
+	;;-----
+	PTR_FREE, data.rv_raw
+	;PTR_FREE, data.rv_tree
+	PTR_FREE, data.rv_id
+	PTR_FREE, data.rv_ptmatch
+	PTR_FREE, data.rv_gprop
 	;RETURN, output
 End

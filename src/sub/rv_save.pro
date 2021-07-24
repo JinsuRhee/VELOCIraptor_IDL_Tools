@@ -7,10 +7,10 @@ IF run EQ 0L THEN RETURN
 	;;-----
 	;; Make a Directory?
 	;;----
-	IF settings.horg EQ 'g' THEN dum = 'VR_Galaxy/'
-	IF settings.horg EQ 'h' THEN dum = 'VR_Halo/'
+	IF settings.horg EQ 'g' THEN dum = 'Galaxy/VR_Galaxy/'
+	IF settings.horg EQ 'h' THEN dum = 'Halo/VR_Halo/'
 
-	fname	= settings.dir_save + dum + 'snap_' + STRING(n_snap,format='(I4.4)')
+	fname	= settings.dir_catalog + dum + 'snap_' + STRING(n_snap,format='(I4.4)')
 
 	file_exist	= FILE_SEARCH(fname)
 	IF STRLEN(file_exist) LE 5L THEN SPAWN, 'mkdir ' + fname
@@ -29,7 +29,7 @@ IF run EQ 0L THEN RETURN
 
 	ngal	= N_ELEMENTS((*data.rv_raw).id)
 	for i=0L, ngal - 1L do begin
-		IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
+		;IF (*data.rv_raw).mass_tot(i) LT 1e6 THEN CONTINUE
 		ib = -1L & iu = -1L & ptcl_id = -1L
 		IF N_ELEMENTS((*data.rv_id).b_ind) GE 2 THEN BEGIN
 			ib = (*data.rv_id).b_ind(i,*) & iu = (*data.rv_id).u_ind(i,*)
@@ -54,20 +54,63 @@ IF run EQ 0L THEN RETURN
 			simple_write_hdf5, tmp, 'G_Prop/G_' + settings.column_list(j),	fid
 		endfor
 
+IF settings.horg EQ 'g' THEN BEGIN
 		ABMag	= -1.
 		IF N_ELEMENTS((*data.rv_gprop).ABMAG) GE 2L THEN $
 			ABMag = (*data.rv_gprop).ABMAG(i,*,*)
 		simple_write_hdf5, ABMag, 'G_Prop/G_ABmag',	fid
-
+	
 		SFR = -1.
 		IF N_ELEMENTS((*data.rv_gprop).SFR) GE 2L THEN $
 			SFR = (*data.rv_gprop).SFR(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR',		fid
 
-		Progs = -1L
-		IF N_ELEMENTS((*data.rv_tree).progs_merit) GE 2L THEN $
-			Progs = (*data.rv_tree).progs_merit(i,*)
-		simple_write_hdf5, progs, 'G_Prop/Progs', 		fid
+		SFR = -1.
+		IF N_ELEMENTS((*data.rv_gprop).SFR_clumpcorr) GE 2L THEN $
+			SFR = (*data.rv_gprop).SFR_clumpcorr(i,*)
+		simple_write_hdf5, SFR, 'G_Prop/G_SFR_clumpycorr',	fid
+
+		CONFrac = -1.
+		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
+			Confrac = (*data.rv_gprop).CONFrac(i,*)
+		simple_write_hdf5, CONfrac, 'G_Prop/G_ConFrac',	fid
+ENDIF
+		;;----- Tree related
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymerit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymerit', 	fid
+
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_merit) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_merit(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_merit', 	fid
+
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_bymass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_bymass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_bymass', 	fid
+
+		;Progs = -1L
+		;IF N_ELEMENTS((*data.rv_tree).prog_matsnap_mass) GE 2L THEN $
+		;	Progs = (*data.rv_tree).prog_matsnap_mass(i,*)
+		;simple_write_hdf5, progs, 'G_Prop/Prog_matchedsnapshot_mass', 	fid
+
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymass) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymass(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymass', fid
+		;
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_matsnap) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_matsnap(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_matchedsnapshot', fid
+
+		;Desc	= -1L
+		;IF N_ELEMENTS((*data.rv_tree).desc_bymerit) GE 2L THEN $
+		;	Desc	= (*data.rv_tree).desc_bymerit(i)
+		;simple_write_hdf5, desc, 'G_Prop/Desc_bymerit', fid
+
 		;;----- Wirte # of Ptcls
 		;simple_write_hdf5, n_bdn, 'P_NumB', fid
 		;simple_write_hdf5, n_ubd, 'P_NumU', fid
@@ -78,6 +121,7 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, ptcl_id,	'P_Prop/P_ID',		fid
 
 		;;----- Write Other Information
+IF settings.horg EQ 'g' THEN BEGIN
 		rate = -1.
 		IF N_ELEMENTS((*data.rv_ptmatch).rate) GE 2L THEN $
 			rate = (*data.rv_ptmatch).rate(i)
@@ -95,6 +139,12 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
 		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
 		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
+		simple_write_hdf5, settings.CONF_R, 'CONF_R', 			fid
+
+		;;-----Write clump data
+		simple_write_hdf5, (*data.rv_gprop).isclump(i), 'isclump',	fid
+ENDIF
+
 		;;----- Close the HDF5 file
 		h5f_close, fid
 
