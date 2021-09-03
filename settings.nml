@@ -26,7 +26,7 @@ verbose	= 1L
 ##		Particle ID type. 4Byte Long Integer(0). 8Byte Long Integer(1)
 ##-----
 
-effective_resolution	= 4096
+effective_resolution	= 4096	;; 2048 for FN
 R_orgver	= 0L
 R_longint	= 0L
 
@@ -44,10 +44,10 @@ R_longint	= 0L
 ##		"dir_raw + '/output_#####/part_#####.out"
 ##-----
 
-dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/'
+dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo_6d/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
-dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l3_d/'
+dir_tree	= '/storage5/FORNAX/VELOCIraptor/l10006/tree/'
 dir_raw		= '/storage6/NewHorizon/'
 
 ##-----
@@ -127,7 +127,6 @@ clump_mfrac	= 0.5
 ##		Run on (1L) / off (2L) for the correcting branches
 ##		Sometimes, VR mis-identifies merging galaxies so that tree building for those galaxies
 ##		are frequently faild.
-##		This routine artifically finds their descendants by searching previous snapshots.
 ##		Objects that have enough merit score is connected to the broken branch.
 ##	P_TFrun_snap_f	= INTEGER
 ##	P_TFrun_snap_i	= INTEGER
@@ -151,11 +150,11 @@ clump_mfrac	= 0.5
 ##		Don't have to set this.
 ##-----
 
-P_VRrun	= 2L
-P_VRrun_snap = [0243, 0243, 1L]
-	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
+P_VRrun	= 1L
+P_VRrun_snap = [0701, 0751, 1L]
+	P_VRrun_step = [1L, 1L, 0L, 0L, 1L]
 	
-P_TFrun	= 1L
+P_TFrun	= 2L
 	P_TFrun_makebr	= 2L
 		P_TFrun_snap = [30L, 1026L, 1L]
 		P_TFrun_treedir	= 'des'
@@ -176,7 +175,7 @@ P_TFrun	= 1L
 	P_TFrun_save	= 1L
 P_TFrun_corr_nn = 025
 
-#P_MKcatalog	= 2L
+P_MKcatalog	= 2L
 #	# Make Catalog based on VR + TF data
 #	#
 
