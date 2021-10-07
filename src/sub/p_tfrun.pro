@@ -692,11 +692,11 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		IF snap EQ -1L THEN CONTINUE
 
 		;;----- READ GAL AT THIS SNAPSHOT
-		;gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
-		;	id0=-1L, dir=settings.dir_catalog, $
-		;	horg=settings.horg)
+		gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
+			id0=-1L, dir=settings.dir_catalog, $
+			horg=settings.horg)
 
-		gal	= f_rdgalquick(snap, dir=settings.dir_catalog, horg=settings.horg)
+		;gal	= f_rdgalquick(snap, dir=settings.dir_catalog, horg=settings.horg)
 		;;---- READ INFO
 		rd_info, info0, file='/storage6/NewHorizon/output_' + $
 			STRING(snap,format='(I5.5)') + '/info_' + $
@@ -942,14 +942,15 @@ PRO p_TFRun_corr, settings, complete_tree
 
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
-	;gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-	;	horg=settings.horg, id0=-1L)
-	gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
+	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg, id0=-1L)
+	;gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
 	corr_idlist	= LONARR(N_ELEMENTS(gal))-1L
 
 	;;----- CONNECT
+	
 	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
@@ -962,11 +963,15 @@ PRO p_TFRun_corr, settings, complete_tree
 			complete_tree, corr_idlist
 			STOP
 		ENDIF
+
 		;IF gal(i).ID LE 232L THEN CONTINUE
 		IF bid(i) LT 0L THEN CONTINUE
 		tree	= *complete_tree(bid(i))
 		tree0	= tree
 		IF tree.snap(0) LE settings.P_TFrun_corr_snap_i THEN CONTINUE
+
+		PRINT, '%123123	-----'
+		PRINT, '	Tree Seacrhing for galaxy #ID = ', gal(i).ID, tree.snap(0)
 
 		ind	= bid(i)
 		;;---- SEARCH LINKED TREE
@@ -1297,7 +1302,6 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 	ENDFOR
 
-	STOP
 	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree
 	STOP
 ENDIF

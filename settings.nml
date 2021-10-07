@@ -10,8 +10,8 @@
 ##
 ##-----
 
-num_thread	= 40L
-horg	= 'h'		;; Halo or Galaxy
+num_thread	= 15L
+horg	= 'g'		;; Halo or Galaxy
 verbose	= 1L
 
 ##-----
@@ -44,11 +44,13 @@ R_longint	= 0L
 ##		"dir_raw + '/output_#####/part_#####.out"
 ##-----
 
-dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/Halo_6d/'
+#dir_catalog     = '/storage5/FORNAX/VELOCIraptor/l10006/'
+dir_catalog	= '/storage5/NewHorizon/VELOCIraptor/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
-dir_tree	= '/storage5/FORNAX/VELOCIraptor/l10006/tree/'
-dir_raw		= '/storage6/NewHorizon/'
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l1/'
+#dir_raw		= '/storage5/FORNAX/KISTI_OUTPUT/l10006/'
+dir_raw 	= '/storage6/NewHorizon/'
 
 ##-----
 ## DATA Settings
@@ -151,8 +153,8 @@ clump_mfrac	= 0.5
 ##-----
 
 P_VRrun	= 1L
-P_VRrun_snap = [0701, 0751, 1L]
-	P_VRrun_step = [1L, 1L, 0L, 0L, 1L]
+P_VRrun_snap = [0960, 0960, 1L]
+	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	
 P_TFrun	= 2L
 	P_TFrun_makebr	= 2L
@@ -161,7 +163,7 @@ P_TFrun	= 2L
 		P_TFrun_meritlimit	= 0.001
 	P_TFrun_corr	= 1L
 		P_TFrun_corr_snap_f	= 1026L
-		P_TFrun_corr_snap_i	= 100L
+		P_TFrun_corr_snap_i	= 30L
 
 		# BRANCH SEARCH BY MERGED BRANCH
 		P_TFrun_corr_nsearch	= 30L
@@ -173,7 +175,7 @@ P_TFrun	= 2L
 		P_TFrun_corr_log	= 2L
 		P_TFrun_corr_masslog	= 2L
 	P_TFrun_save	= 1L
-P_TFrun_corr_nn = 025
+P_TFrun_corr_nn = 270
 
 P_MKcatalog	= 2L
 #	# Make Catalog based on VR + TF data
