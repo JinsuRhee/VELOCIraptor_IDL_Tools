@@ -614,7 +614,7 @@ PRO p_TFRun_findbr_bymerit_selectsnap_scheck, evol, avg, std, cut, sfact
 	cgOplot, [evol(0).snapnum, evol(-1).snapnum], [v2, v2], linestyle=2, thick=2, color='red'
 	cgOplot, evol(cut(0)).snapnum, evol(cut(0)).mass_tot, psym=16, color='red'
 END
-FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
+FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, settings_corr, tree, quantity
 	sanitycheck	= settings.p_TFRun_corr_masslog
 	evol	= f_getevol(tree, tree.id(-1), tree.snap(-1), settings.column_list, $
 		horg=settings.horg, dir=settings.dir_catalog)
@@ -622,10 +622,13 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 	mass	= ALOG10(evol.mass_tot)
 	snap	= evol.snapnum
 
-	mass_avg	= MEAN(mass)
-	mass_std	= STDDEV(mass)
-	cut	= WHERE(mass GT mass_avg - sfact * mass_std AND $
-		mass LT mass_avg + sfact * mass_std, ncut)
+	n_end 	= settings_corr.nlast < (N_ELEMENTS(mass)-1L)
+	mass_avg	= MEAN(mass(0L:n_end))
+	mass_std	= STDDEV(mass(0L:n_end))
+
+	cut 	= WHERE(ABS(mass-mass_avg) LT settings_corr.sfact * mass_std, ncut)
+	;cut	= WHERE(mass GT mass_avg - settings.sfact * mass_std AND $
+	;	mass LT mass_avg + settings.sfact * mass_std, ncut)
 	IF ncut EQ 0L THEN BEGIN
 		PRINT, 'no snapshot exists for this mass range'
 		STOP
@@ -633,12 +636,13 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 
 	IF sanitycheck EQ 1L THEN BEGIN
 		PRINT, 'Sanity Check whether this range is proper'
-		p_TFRun_findbr_bymerit_selectsnap_scheck, evol, mass_avg, mass_std, cut, sfact
+		p_TFRun_findbr_bymerit_selectsnap_scheck, evol, mass_avg, mass_std, cut, settings_corr.sfact
 		STOP
 	ENDIF
 
-	cut2	= WHERE(tree.snap(cut) - tree.snap(0) GT 20.)
-	cut	= cut(cut2(0))
+	;cut2	= WHERE(tree.snap(cut) - tree.snap(0) GT 20.)
+	;cut	= cut(cut2(0))
+	cut 	= cut(0)
 
 	;; OUTPUT
 	snap0	= evol(cut).snapnum
@@ -653,25 +657,27 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 	quantity	= {mass:mass0, pos:pos0, speed:speed0, time:info0.tGyr, unit_l:info0.unit_l}
 	RETURN, cut
 END
-FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
+FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree
 
-	nsearch	= 4L
-	sfact	= 1.0
-	;;----- First Get Evolution of the target galaxy
-	mass0	= 0.
-	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, tree, quantity, sfact)
+	nsearch	= settings_corr.nsearch		;; # of snapsts to search
 
-	;;----- GET PID AT THIS SNAPSHOT
+	;;----- First Pick the snapshot where to stitch
+	;mass0	= 0.
+	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, settings_corr, tree, quantity)
+
+	;;----- GET Partile IDs AT THIS SNAPSHOT
 	id0	= tree.id(ind)
 	snap0	= tree.snap(ind)
-
 	pid0	= p_TFRun_getpid(settings, id0, snap0)
 
-	;;----- FIND GAL
+	;;----- FIND GAL with merit scores
+
+	;; Fortran routine settings
 	ftr_name	= settings.dir_lib + 'sub_ftn/get_merit.so'
 	larr = LONARR(20) & darr = DBLARR(20)
 		larr(0)	= N_ELEMENTS(pid0)
 		larr(2)	= settings.num_thread
+
 
 	treedir	= settings.p_tfrun_treedir
 	settings.p_tfrun_treedir	= 'prg'
@@ -681,11 +687,13 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 	idlist	= LONARR(nsearch)
 
 	snap0	= tree.snap(0)
+
+	;; Find a galaxy with the highest merit at each snapshot
 	FOR i=0L, nsearch-1L DO BEGIN
 
 		;;----- FIND SNAPSHOT
 		snap	= snap0
-		FOR j=0L, 10L*(i+1L)-1L DO BEGIN
+		FOR j=0L, settings_corr.nstep*(i+1L)-1L DO BEGIN
 			snap	= p_tfrun_findnextsnap(settings, snap)
 			IF snap EQ -1L THEN BREAK
 		ENDFOR
@@ -711,14 +719,14 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		ngal	= N_ELEMENTS(gal)
 		mer_dum	= DBLARR(ngal)
 
-		;; FIND THE FIRST 100 GALAXIES AROUND
+		;; FIND THE FIRST 10% GALAXIES AROUND based on the code unit
 
 		d3d	= (gal.xc - quantity.pos(0))^2 + $
 			(gal.yc - quantity.pos(1))^2 + $
 			(gal.zc - quantity.pos(2))^2
 		d3d_s	= d3d(SORT(d3d))
 		;dcut	= d3d_s(50<(ngal-1L))
-		dcut	= d3d_s(LONG(ngal/10))
+		dcut	= d3d_s( LONG(ngal/10) )
 
 		FOR j=0L, ngal-1L DO BEGIN
 
@@ -774,7 +782,11 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		merit(i)	= mer_val
 		snaplist(i)	= snap
 		idlist(i)	= id_val
+
+		;; If this merit is high enough, end this loop
+		IF merit(i) GT settings_corr.meritcut THEN BREAK
 	ENDFOR
+
 	settings.p_tfrun_treedir	= treedir
 
 	ind	= REVERSE(SORT(merit))
@@ -899,7 +911,7 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 			evol(cut-2L+i).id, evol(cut-2L+i).snapnum, $
 			num_thread=settings.num_thread, dir_raw=settings.dir_raw, $
 			dir_catalog=settings.dir_catalog, /raw, boxrange=20., $
-			n_pix=n_pix, min=1e1, max=1e5)
+			n_pix=n_pix, min=1e1, max=1e5, proj='xy')
 		xr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).xc
 		yr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).yc
 		zr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).zc
@@ -936,7 +948,16 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 
 END
 
-PRO p_TFRun_corr, settings, complete_tree 
+PRO p_TFRun_corr, settings, complete_tree
+
+	;;----- Settings for Tree correction
+	settings_corr	= {$
+		nsearch:10L, $		;; # of snapshots to search further
+		nstep:5L, $			;; Snapshot interval for each search
+		meritcut:0.5, $		;; Merit cut for Seacrhing
+		sfact:1.d, $		;; Sigma range when finding the starting snapshot
+		nlast:50L, $		;; # of snapshots when computing mean/std mass to find starting snapshot
+		a:'a'}
 
 	snap0	= settings.p_TFRun_corr_snap_f
 
@@ -974,12 +995,13 @@ PRO p_TFRun_corr, settings, complete_tree
 		PRINT, '	Tree Seacrhing for galaxy #ID = ', gal(i).ID, tree.snap(0)
 
 		ind	= bid(i)
+
 		;;---- SEARCH LINKED TREE
 		REPEAT BEGIN
 			;;----- BY DIRECTLY COMPARING MERIT SCORES
 			n0	= tree.snap(0)
 
-			blist	= p_TFRun_findbr_bymerit(settings, tree, complete_tree)
+			blist	= p_TFRun_findbr_bymerit(settings, settings_corr, tree, complete_tree)
 			;;;;;
 
 			;n0	= tree.snap(0)
@@ -1001,7 +1023,6 @@ PRO p_TFRun_corr, settings, complete_tree
 
 			;	ind	= p_TFRun_corr_detbr(settings, tree, complete_tree, blist)
 			;ENDELSE
-			;;
 
 			IF MAX(blist) LT 0L THEN BEGIN
 				n1	= n0
@@ -1012,7 +1033,7 @@ PRO p_TFRun_corr, settings, complete_tree
 				IF settings.P_TFRun_corr_log EQ 1L THEN $
 					P_TFRun_corr_sanitycheck, settings, tree, n0
 
-				PRINT, gal(i).id
+				;PRINT, gal(i).id
 				;STOP
 				n1	= tree.snap(0)
 			ENDELSE
