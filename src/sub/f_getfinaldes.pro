@@ -2,7 +2,8 @@ FUNCTION f_getfinaldes, settings, id, n0, n1, snaplist
 
 	id0	= id
 	FOR i=n0 + 1, n1 DO BEGIN
-		GAL	= f_rdgal(settings, snaplist(i), ['ID'])
+		;GAL	= f_rdgal(settings, snaplist(i), ['ID'])
+		GAL	= f_rdgal(snaplist(i), -1L, header=settings.vrheader)
 		cut	= WHERE(GAL.progs EQ id0)
 		IF N_ELEMENTS(cut) GE 2L THEN BEGIN
 			PRINT, 'Multiple descent !?'

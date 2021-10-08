@@ -42,8 +42,9 @@ PRO p_mkcatalog, settings
 	;;-----
 	;; LOAD GALAXY
 	;;-----
-	gal	= f_rdgal(1026L, [settings.column_list, 'SFR', 'ABmag'], $
-		dir=settings.dir_catalog, horg='g', id0=-1L)
+	;gal	= f_rdgal(1026L, [settings.column_list, 'SFR', 'ABmag'], $
+	;	dir=settings.dir_catalog, horg='g', id0=-1L)
+	gal	= f_rdgal(1026L, -1L, header=settings.vrheader)
 	n_gal	= N_ELEMENTS(gal.id)
 
 	;;-----
@@ -56,8 +57,9 @@ PRO p_mkcatalog, settings
 	;;-----
 	bid	= p_mkcatalog_getbr(settings, complete_tree, gal.id)
 
-	gal	= f_rdgal(761L, [settings.column_list], dir=settings.dir_catalog, $
-		horg='g', id0=-1L)
+	;gal	= f_rdgal(761L, [settings.column_list], dir=settings.dir_catalog, $
+	;	horg='g', id0=-1L)
+	gal 	= f_rdgal(761L, -1L, header=settings.vrheader)
 	ind	= js_bound(gal.xc, gal.yc, gal.zc, $
 		xr=[-1.,1.]*20. + gal(2).xc, $
 		yr=[-1.,1.]*20. + gal(2).yc, $
@@ -134,7 +136,8 @@ PRO p_mkcatalog, settings
 
 	;;STOP
 	STOP
-	gal	= f_rdgal(959L, [settings.column_list, 'SFR', 'ABmag'], dir=settings.dir_catalog, horg='g', id0=-1L)
+	;gal	= f_rdgal(959L, [settings.column_list, 'SFR', 'ABmag'], dir=settings.dir_catalog, horg='g', id0=-1L)
+	gal	= f_rdgal(959L, -1L, header=settings.vrheader)
 
 	n_gal	= N_ELEMENTS(gal.id)
 

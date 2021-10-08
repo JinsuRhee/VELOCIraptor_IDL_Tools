@@ -433,8 +433,8 @@ FUNCTION p_tfrun_corr_findgal, settings, gal0, snap0, pid, snap, NSNAP=NSNAP
 	ENDFOR
 	settings.p_tfrun_treedir	= treedir
 
-	gal	= f_rdgal(snap, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	gal	= f_rdgal(snap, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 
 	;;----- READ INFO
 	rd_info, info0, file='/storage6/NewHorizon/output_' + $
@@ -497,8 +497,8 @@ FUNCTION p_TFRun_corr_findbr_byidmbp, settings, tree, complete_tree
 
 	id0	= tree.id(0)
 	snap0	= tree.snap(0)
-	gal0	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=id0)
+	gal0	= f_rdgal(snap0, id0, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 
 	;;-----
 	;; READ THE FIRST 100 PARTICLE (BINDING ENERGY ORDER)
@@ -700,11 +700,10 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree
 		IF snap EQ -1L THEN CONTINUE
 
 		;;----- READ GAL AT THIS SNAPSHOT
-		gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
-			id0=-1L, dir=settings.dir_catalog, $
+		gal	= f_rdgal(snap, -1L, column_list=['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
+			dir=settings.dir_catalog, $
 			horg=settings.horg)
 
-		;gal	= f_rdgalquick(snap, dir=settings.dir_catalog, horg=settings.horg)
 		;;---- READ INFO
 		rd_info, info0, file='/storage6/NewHorizon/output_' + $
 			STRING(snap,format='(I5.5)') + '/info_' + $
@@ -922,8 +921,8 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 			SIN(ang)*evol(cut-2L+i).r_halfmass + evol(cut-2L+i).yc, $
 		       linestyle=2, color='red', thick=2
 
-	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, settings.column_list, $
-			dir=settings.dir_catalog, horg='g', id0=-1L)
+	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, -1L, column_list=settings.column_list, $
+			dir=settings.dir_catalog, horg='g')
 		ind	= js_bound(gal0.xc, gal0.yc, gal0.zc, $
 			xr=xr(*,i), yr=yr(*,i), zr=zr(*,i))
 		cgOplot, gal0(ind).xc, gal0(ind).yc, psym=9, color='blue', thick=1, symsize=2.0
@@ -963,8 +962,8 @@ PRO p_TFRun_corr, settings, complete_tree
 
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
-	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 	;gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
@@ -1122,8 +1121,8 @@ PRO p_TFRun_save, settings, complete_tree
 	;;-----
 	;; LOAD GAL
 	;;-----
-	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
 	;;-----
@@ -1246,7 +1245,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;; LAST SNAPSHOT
 		;;-----
 		IF i EQ treeset.N1 OR snap_next EQ -1L THEN BEGIN
-			g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1L, $
+			g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'],$
 				dir=settings.dir_catalog, horg=settings.horg)
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
 				tree, evoldum, gind, g_curr, snap_curr
@@ -1268,17 +1267,17 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		treefname	= settings.dir_tree + 'tree.snapshot_' + $
 			STRING(snap_curr,format='(I4.4)') + 'VELOCIraptor.tree'
 		t_curr	= p_tfrun_rdhdf5(treefname, treeset)
-		g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1, $
+		g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
-		g_next	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
+		g_next	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
 		IF t_curr.nlink GE 2L THEN BEGIN
 			FOR i2=0L, t_curr.nlink-2L DO BEGIN
 				snap_next	= p_tfrun_findnextsnap(settings, snap_next)
 				IF snap_next EQ -1L THEN CONTINUE
-				g_dum	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
+				g_dum	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 					dir=settings.dir_catalog, horg=settings.horg)
 				g_next	= [g_next, g_dum]
 			ENDFOR
