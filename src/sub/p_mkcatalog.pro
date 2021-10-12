@@ -73,7 +73,7 @@ PRO p_mkcatalog, settings
 		IF ncut GE 1L THEN BREAK
 	ENDFOR
 	STOP
-	img	= draw_gal(3L, 761L, dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, boxrange=20., min=1e4, max=1e8, /raw)
+	img	= draw_gal(761L, 3L, dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, boxrange=20., min=1e4, max=1e8, /raw)
 	cgDisplay, 800, 800
 	cgImage, img
 	STOP
