@@ -1035,7 +1035,7 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 		       linestyle=2, color='red', thick=2
 
 	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, -1L, column_list=settings.column_list, $
-			dir=settings.dir_catalog, horg='g')
+			dir=settings.dir_catalog, horg=settings.horg)
 		ind	= js_bound(gal0.xc, gal0.yc, gal0.zc, $
 			xr=xr(*,i), yr=yr(*,i), zr=zr(*,i))
 		cgOplot, gal0(ind).xc, gal0(ind).yc, psym=9, color='blue', thick=1, symsize=2.0
@@ -1152,8 +1152,10 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			ENDELSE
 		ENDREP UNTIL tree.snap(0) LE settings.P_TFrun_corr_snap_i OR n0 EQ n1
 
-			g	= f_getevol(tree, 1026L, gal(i).ID, ['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg='g')
-			cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/galaxy/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
+			g	= f_getevol(tree, 1026L, gal(i).ID, ['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
+			IF settings.horg EQ 'h' THEN dir_horg = STRTRIM('halo',2)
+			IF settings.horg EQ 'g' THEN dir_horg = STRTRIM('galaxy',2)
+			cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/' + dir_horg + '/l1/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
 			cgDisplay, 800, 800
 			!p.font = -1 & !p.charsize = 1.5 & !p.charthick = 4.0
 			cgPlot, g.snapnum, g.mass_tot, /ylog, linestyle=0, position=[0.18, 0.18, 0.95, 0.95], xrange=[0., 1200.], $
