@@ -950,7 +950,7 @@ FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, tree_key, bid, ind, r
 
 	keyval	= tree_key(0)
 	tree_key(WHERE(tree_key EQ ind)) = bid
-	tree_key	= keyval
+	tree_key(0)	= keyval
 
 	snap0	= tree.snap(0)
 	cut	= WHERE(tree_tolink.snap LT snap0, ncut)
