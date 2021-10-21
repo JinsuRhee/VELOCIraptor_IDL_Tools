@@ -622,7 +622,7 @@ PRO p_TFRun_findbr_bymerit_selectsnap_scheck, evol, avg, std, cut, sfact
 END
 FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, settings_corr, tree, quantity
 	sanitycheck	= settings.p_TFRun_corr_masslog
-	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), settings.column_list, $
+	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), datalist=settings.column_list, $
 		horg=settings.horg, dir=settings.dir_catalog)
 
 	mass	= ALOG10(evol.mass_tot)
@@ -948,7 +948,9 @@ FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, tree_key, bid, ind, r
 		endind:	-1L, $
 		numprog:-1L}, /no_copy)
 
+	keyval	= tree_key(0)
 	tree_key(WHERE(tree_key EQ ind)) = bid
+	tree_key	= keyval
 
 	snap0	= tree.snap(0)
 	cut	= WHERE(tree_tolink.snap LT snap0, ncut)
@@ -996,7 +998,7 @@ FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, tree_key, bid, ind, r
 END
 PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 
-	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), settings.column_list, $
+	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), datalist=settings.column_list, $
 		horg=settings.horg, dir=settings.dir_catalog)
 
 	cut	= WHERE(evol.snapnum EQ n0)
@@ -1152,7 +1154,7 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			ENDELSE
 		ENDREP UNTIL tree.snap(0) LE settings.P_TFrun_corr_snap_i OR n0 EQ n1
 
-			g	= f_getevol(tree, 1026L, gal(i).ID, ['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
+			g	= f_getevol(tree, 1026L, gal(i).ID, datalist=['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
 			IF settings.horg EQ 'h' THEN dir_horg = STRTRIM('halo',2)
 			IF settings.horg EQ 'g' THEN dir_horg = STRTRIM('galaxy',2)
 			cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/' + dir_horg + '/l1/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
@@ -1174,6 +1176,7 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 		complete_tree(bid(i))	= PTR_NEW(tree, /no_copy)
 		corr_idlist(i)	= gal(i).ID
 		;STOP	;456456
+		IF tree_key(0) NE 10000L THEN STOP
 	ENDFOR
 	cut	= WHERE(corr_idlist GE 0L, ncut)
 	IF ncut GE 1L THEN corr_idlist = corr_idlist(cut)
