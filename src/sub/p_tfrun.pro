@@ -1391,7 +1391,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
-			IF settings.p_TFrun_corr_nn NE 3L THEN BEGIN
+			IF i NE treeset.N0 THEN BEGIN
 				RESTORE, settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav'
 			ENDIF
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
