@@ -27,6 +27,7 @@ Pro main, $
 	;;-----
 	IF settings.P_VRrun EQ 1L THEN P_VRrun, settings
 	IF settings.P_TFrun EQ 1L THEN P_TFrun, settings
+	IF settings.P_MKtreedat EQ 1L THEN P_MKtree, settings
 	IF settings.P_MKCatalog EQ 1L THEN P_MKcatalog, settings
 
 	;;-----
