@@ -443,11 +443,11 @@ FUNCTION p_tfrun_corr_findgal, settings, gal0, snap0, pid, snap, NSNAP=NSNAP
 		horg=settings.horg)
 
 	;;----- READ INFO
-	rd_info, info0, file='/storage6/NewHorizon/output_' + $
+	rd_info, info0, file=settings.dir_raw + 'output_' + $
 		STRING(snap0,format='(I5.5)') + '/info_' + $
 		STRING(snap0,format='(I5.5)') + '.txt'
 
-	rd_info, info, file='/storage6/NewHorizon/output_' + $
+	rd_info, info, file=settings.dir_raw + 'output_' + $
 		STRING(snap,format='(I5.5)') + '/info_' + $
 		STRING(snap,format='(I5.5)') + '.txt'
 
@@ -669,7 +669,7 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, settings_corr, tree, quant
 
 	;; OUTPUT
 	snap0	= evol(cut).snapnum
-	rd_info, info0, file='/storage6/NewHorizon/output_' + $
+	rd_info, info0, file=settings.dir_raw + 'output_' + $
 		STRING(snap0,format='(I5.5)') + '/info_' + $
 		STRING(snap0,format='(I5.5)') + '.txt'
 
@@ -749,7 +749,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 			horg=settings.horg)
 
 		;;---- READ INFO
-		rd_info, info0, file='/storage6/NewHorizon/output_' + $
+		rd_info, info0, file=settings.dir_raw + '/output_' + $
 			STRING(snap,format='(I5.5)') + '/info_' + $
 			STRING(snap,format='(I5.5)') + '.txt'
 
@@ -1154,25 +1154,25 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			ENDELSE
 		ENDREP UNTIL tree.snap(0) LE settings.P_TFrun_corr_snap_i OR n0 EQ n1
 
-			g	= f_getevol(tree, 1026L, gal(i).ID, datalist=['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
-			IF settings.horg EQ 'h' THEN dir_horg = STRTRIM('halo',2)
-			IF settings.horg EQ 'g' THEN dir_horg = STRTRIM('galaxy',2)
-			cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/' + dir_horg + '/l1/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
-			cgDisplay, 800, 800
-			!p.font = -1 & !p.charsize = 1.5 & !p.charthick = 4.0
-			cgPlot, g.snapnum, g.mass_tot, /ylog, linestyle=0, position=[0.18, 0.18, 0.95, 0.95], xrange=[0., 1200.], $
-				xtitle='Snap #', ytitle=textoidl('Stellar Mass [M' + sunsymbol() + ']')
-			cgOplot, [110, 110], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.2
-			cgOplot, [335, 335], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.4
-			cut_merit	= WHERE(tree.m_merit GT 0.001 , ncut_merit)
-			IF ncut_merit GE 1L THEN BEGIN
-				FOR j=0L, ncut_merit-1L DO BEGIN
-					ss 	= tree.m_snap(cut_merit(j))
-					mm 	= g(WHERE(g.snapnum EQ ss)).mass_tot
-					cgOplot, ss, mm, psym=9, color='red', symsize=1.5
-				ENDFOR
-			ENDIF
-			cgPS_close
+			;g	= f_getevol(tree, 1026L, gal(i).ID, datalist=['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
+			;IF settings.horg EQ 'h' THEN dir_horg = STRTRIM('halo',2)
+			;IF settings.horg EQ 'g' THEN dir_horg = STRTRIM('galaxy',2)
+			;cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/' + dir_horg + '/l1/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
+			;cgDisplay, 800, 800
+			;!p.font = -1 & !p.charsize = 1.5 & !p.charthick = 4.0
+			;cgPlot, g.snapnum, g.mass_tot, /ylog, linestyle=0, position=[0.18, 0.18, 0.95, 0.95], xrange=[0., 1200.], $
+			;	xtitle='Snap #', ytitle=textoidl('Stellar Mass [M' + sunsymbol() + ']')
+			;cgOplot, [110, 110], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.2
+			;cgOplot, [335, 335], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.4
+			;cut_merit	= WHERE(tree.m_merit GT 0.001 , ncut_merit)
+			;IF ncut_merit GE 1L THEN BEGIN
+			;	FOR j=0L, ncut_merit-1L DO BEGIN
+			;		ss 	= tree.m_snap(cut_merit(j))
+			;		mm 	= g(WHERE(g.snapnum EQ ss)).mass_tot
+			;		cgOplot, ss, mm, psym=9, color='red', symsize=1.5
+			;	ENDFOR
+			;ENDIF
+			;cgPS_close
 		complete_tree(bid(i))	= PTR_NEW(tree, /no_copy)
 		corr_idlist(i)	= gal(i).ID
 		;STOP	;456456
