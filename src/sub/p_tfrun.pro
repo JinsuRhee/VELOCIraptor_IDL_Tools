@@ -633,7 +633,7 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, settings_corr, tree, quant
 	delM0	= 1d15
 	FOR i=0L, n_end-1L DO BEGIN
 		ind0	= i
-		ind1 	= (i+settings_corr.nstep-1L) < (N_ELEMENTS(mass)-1L)
+		ind1 	= (i+settings_corr.nstep) < (N_ELEMENTS(mass)-1L)
 		delM	= MAX(mass(ind0:ind1)) - MIN(mass(ind0:ind1))
 		IF delM LT delm0 THEN BEGIN
 			delm0 	= delM
@@ -1316,8 +1316,8 @@ END
 FUNCTION p_TFRun_makebr_genkey, settings, tree
 
 	genkey_redo:
-	MAX_snap	= 2000L
-	MAX_ID		= 5000L
+	MAX_snap	= 200L
+	MAX_ID		= 10000L
 
 	tree_key 	= LONARR(MAX_snap + settings.P_TFrun_bidkey*MAX_ID) - 1L
 
@@ -1329,11 +1329,11 @@ FUNCTION p_TFRun_makebr_genkey, settings, tree
 		ind 	= s + settings.P_TFrun_bidkey*id
 
 		IF MAX(id) GT MAX_ID THEN BEGIN
-			MAX_ID 		= MAX(id)
+			MAX_ID 		= MAX(id) + 1L
 			GOTO, genkey_redo
 		ENDIF
 		IF MAX(s) GT MAX_snap THEN BEGIN
-			MAX_snap 	= MAX(s)
+			MAX_snap 	= MAX(s) + 1L
 			GOTO, genkey_redo
 		ENDIF
 
