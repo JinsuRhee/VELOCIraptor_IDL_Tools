@@ -1315,10 +1315,10 @@ END
 ;;----- GEN KEY
 FUNCTION p_TFRun_makebr_genkey, settings, tree
 
-	genkey_redo:
 	MAX_snap	= 200L
 	MAX_ID		= 10000L
 
+	genkey_redo:
 	tree_key 	= LONARR(MAX_snap + settings.P_TFrun_bidkey*MAX_ID) - 1L
 
 	n_tree 		= N_ELEMENTS(tree)
