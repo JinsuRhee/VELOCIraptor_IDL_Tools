@@ -13,7 +13,7 @@
 ##-----
 
 num_thread	= 24L
-horg	= 'g'		;; Halo or Galaxy
+horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
 ##-----
@@ -31,7 +31,7 @@ verbose	= 1L
 ##-----
 
 effective_resolution	= 2048	;; 2048 for FN
-R_orgver	= 1L
+R_orgver	= 0L
 R_longint	= 0L
 
 ##-----
@@ -50,11 +50,11 @@ R_longint	= 0L
 ##
 ##-----
 
-dir_catalog     = '/storage5/FORNAX/VELOCIraptor/'
+dir_catalog     = '/storage3/Clusters/VELOCIraptor/c39990/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
-dir_tree	= '/storage5/FORNAX/VELOCIraptor/Galaxy/tree/l3/'
-dir_raw		= '/storage5/FORNAX/KISTI_OUTPUT/l10006/'
+dir_tree	= '/storage3/Clusters/VELOCIraptor/c39990/Halo/tree/l3/'
+dir_raw		= '/storage3/Clusters/39990/snapshots/'
 
 ##-----
 ## DATA Settings
@@ -204,18 +204,18 @@ clump_mfrac	= 0.5
 ##-----
 
 P_VRrun	= 2L
-P_VRrun_snap = [0090, 0090, 1L]
+P_VRrun_snap = [0099, 0099, 1L]
 	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	
 P_TFrun	= 2L
 	P_TFrun_makebr	= 2L
-		P_TFrun_snap = [30L, 1026L, 1L]
+		P_TFrun_snap = [10L, 187L, 1L]
 		P_TFrun_treedir	= 'des'
 		P_TFrun_meritlimit	= 0.001
 		P_TFrun_bidkey		= 10000L
 	P_TFrun_corr	= 1L
-		P_TFrun_corr_snap_f	= 1026L
-		P_TFrun_corr_snap_i	= 30L
+		P_TFrun_corr_snap_f	= 187L
+		P_TFrun_corr_snap_i	= 10L
 
 		# BRANCH SEARCH BY COMPUTING MERIT SCORES
 		P_TFrun_corr_msearch_nsearch	= 10L
@@ -235,11 +235,11 @@ P_TFrun	= 2L
 		P_TFrun_corr_masslog	= 2L
 		P_TFrun_corr_timelog	= 1L
 		P_TFrun_save	= 2L
-P_TFrun_corr_nn = 014
+P_TFrun_corr_nn = 001
 
-P_MKtreedat	= 1L
+P_MKtreedat	= 2L
 
-P_MKcatalog	= 3L
+P_MKcatalog	= 1L
 #	# Make Catalog based on VR + TF data
 #	#
 
@@ -261,4 +261,4 @@ P_MKcatalog	= 3L
 ## Some tests...
 ##
 P_test1	= 2L
-P_test2 = 1L 		;; test for P_TFrun_corr
+P_test2 = 2L 		;; test for P_TFrun_corr

@@ -1349,6 +1349,57 @@ FUNCTION p_TFRun_makebr_genkey, settings, tree
 	RETURN, tree_key
 END
 
+;;-----
+;; CNAME
+;;-----
+PRO p_tfrun_makebr, settings
+	dir	= settings.dir_tree
+        flist   = dir + '/tree.snaplist.txt'
+        slist   = LONARR(FILE_LINES(flist))
+        OPENR, 10, flist
+        FOR i=0L, FILE_LINES(flist)-1L DO BEGIN
+                str     = ' '
+                READF, 10, str
+                ind     = STRPOS(str,'snap_')
+                str     = STRMID(str,ind+5,4)
+                slist(i)= LONG(str)
+        ENDFOR
+        CLOSE, 10
+
+        tfile   = FILE_SEARCH(dir + '/tree.snapshot*.tree')
+        IF N_ELEMENTS(tfile) NE N_ELEMENTS(slist) THEN BEGIN
+                PRINT, 'wrong number of tree results'
+                STOP
+        ENDIF
+
+        tnumber = LONARR(N_ELEMENTS(tfile))
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                str     = tfile(i)
+                str     = STRSPLIT(str, '_' ,/extract)
+                str     = str(1)
+                str     = STRSPLIT(str, '.', /extract)
+                str     = str(0)
+                tnumber(i)      = LONG(str)
+        ENDFOR
+        cut     = SORT(tnumber)
+        tfile   = tfile(cut)
+
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                orgname = tfile(i)
+                newname = 'tree.snapshot_' + STRING(slist(i),format='(I4.4)') + 'VELOCIraptor'
+                IF orgname EQ newname THEN CONTINUE
+                tmp     = 'mv ' + $
+                        dir + '/' + orgname + ' ' + dir + '/' + newname
+                SPAWN, tmp
+        ENDFOR
+
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                orgname = 'tree.snapshot_' + STRING(slist(i),format='(I4.4)') + 'VELOCIraptor'
+                newname = orgname + '.tree'
+                tmp     = 'mv ' + dir + '/' + orgname + ' ' + dir + '/' + newname
+                SPAWN, tmp
+        ENDFOR
+END
 
 PRO p_tfrun, settings
 
@@ -1373,6 +1424,11 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	complete_tree	= PTRARR(maxgind)
 
 	evoldum	= {ID:LONARR(maxgind)-1L, snap:LONARR(maxgind)-1L, merit:DBLARR(maxgind)-1.d}
+
+	;;-----
+	;; CHANGE TREE FILE NAME
+	;;-----
+	p_tfrun_makebr_cname, settings
 
 	;;-----
 	;; GO FORWARD
