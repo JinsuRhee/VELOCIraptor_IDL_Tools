@@ -1352,7 +1352,7 @@ END
 ;;-----
 ;; CNAME
 ;;-----
-PRO p_tfrun_makebr, settings
+PRO p_tfrun_makebr_cname, settings
 	dir	= settings.dir_tree
         flist   = dir + '/tree.snaplist.txt'
         slist   = LONARR(FILE_LINES(flist))
@@ -1389,7 +1389,7 @@ PRO p_tfrun_makebr, settings
                 newname = 'tree.snapshot_' + STRING(slist(i),format='(I4.4)') + 'VELOCIraptor'
                 IF orgname EQ newname THEN CONTINUE
                 tmp     = 'mv ' + $
-                        dir + '/' + orgname + ' ' + dir + '/' + newname
+                        orgname + ' ' + dir + '/' + newname
                 SPAWN, tmp
         ENDFOR
 
