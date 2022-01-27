@@ -1,5 +1,5 @@
-for i in $(seq -f "%03g" 014 120)
+for i in $(seq -f "%03g" 001 019)
 do
-	sed -i "177c		P_TFrun_corr_nn = ${i}" ../settings.nml
+	sed -i "238c		P_TFrun_corr_nn = ${i}" ../settings.nml
 	idl -e main
 done

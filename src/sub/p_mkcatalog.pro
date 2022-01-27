@@ -32,32 +32,175 @@ PRO p_mkcatalog, settings
 	FOR i=0L, N_ELEMENTS(settings.mag_r)-1L DO $
 		FOR j=0L, N_ELEMENTS(settings.flux_list) DO F_MAG += ',F9.5,5X '
 
-	HEADER	= 'AEXP'
-	FOR i=0L, N_ELEMENTS(settings.column_list)-1L DO HEADER += ' ' + settings.column_list(i)
-	FOR i=0L, N_ELEMENTS(settings.sfr_r)-1L DO HEADER += ' SFR' + STRING(i,format='(I2.2)')
-	FOR i=0L, N_ELEMENTS(settings.flux_list)-1L DO $
-		FOR j=0L, N_ELEMENTS(settings.mag_r)-1L DO $
-			HEADER += ' ' + STRTRIM(settings.flux_list(i)) + STRING(j,format='(I1.1)')
+	HEADER	= ['snapnum', 'aexp', settings.column_list]
+	;HEADER	= 'AEXP'
+	;FOR i=0L, N_ELEMENTS(settings.column_list)-1L DO HEADER += ' ' + settings.column_list(i)
+
+	IF settings.horg EQ 'g' THEN BEGIN
+		FOR i=0L, N_ELEMENTS(settings.sfr_r)-1L DO HEADER = [HEADER, 'SFR' + STRING(i,format='(I2.2)')]
+		FOR i=0L, N_ELEMENTS(settings.flux_list)-1L DO $
+			FOR j=0L, N_ELEMENTS(settings.mag_r)-1L DO $
+				HEADER = [HEADER, STRTRIM(settings.flux_list(i)) + STRING(j,format='(I1.1)')]
+	ENDIF
 
 	;;-----
 	;; LOAD GALAXY
 	;;-----
-	gal	= f_rdgal(1026L, [settings.column_list, 'SFR', 'ABmag'], $
-		dir=settings.dir_catalog, horg='g', id0=-1L)
-	n_gal	= N_ELEMENTS(gal.id)
+	;;----- Find the last snapshot
+	flist	= (FILE_SEARCH(settings.dir_catalog + 'Galaxy/VR_Galaxy/snap_*'))[-1]
+	lsnap	= LONG((STRSPLIT(flist,'_',/extract))[-1])
 
+	;;-----LOAD GAL
+	datalist	= settings.column_list
+	IF settings.horg EQ 'g' THEN datalist = [datalist, 'SFR', 'ABmag']
+	gal	= f_rdgal(lsnap, -1L, horg=settings.horg, column_list=datalist, $
+		dir=settings.dir_catalog)
+	n_gal	= N_ELEMENTS(gal)
+
+	;;----- LOAD TREE
+	RESTORE, settings.dir_tree + 'ctree.sav'
+
+	;;-----
+	;; Save Catalog
+	;;-----
+	dir	= settings.dir_catalog
+	IF settings.horg EQ 'g' THEN dir = dir + 'Galaxy/VR_Galaxy/catalog/'
+	IF settings.horg EQ 'h' THEN dir = dir + 'Halo/VR_Halo/catalog/'
+	js_mkdir, dir
+
+	FOR i=0L, n_gal-1L DO BEGIN
+		tree	= f_gettree(lsnap, gal(i).ID, complete_tree, tree_key)
+		tmp	= f_getevol(tree, lsnap, gal(i).ID, datalist=datalist, horg=settings.horg, dir=settings.dir_catalog)
+		fname	= dir + 'GAL_' + STRING(gal(i).ID,format='(I6.6)') + '.txt'
+
+		;;----- Write
+		OPENW, 10, fname
+
+		;;----- HEADER
+		IF settings.horg EQ 'g' THEN BEGIN
+			PRINTF, 10, 'SFR0 - SFR14'
+			PRINTF, 10, '	Aperture in Re'
+	       		PRINTF, 10, H_SFR1
+
+			PRINTF, 10, '	Time in Gyr'
+			PRINTF, 10, H_SFR2
+			PRINTF, 10, ' '
+
+			PRINTF, 10, 'MAG0 - MAG2'
+			PRINTF, 10, '	Aperture in Re'
+			PRINTF, 10, H_MAG
+			PRINTF, 10, ' '
+		ENDIF
+
+		;;----- SET FORMAT
+		IF i EQ 0L THEN BEGIN
+			n_str	= 0L
+			d_str	= ' '
+
+			column_width	= LONARR(N_ELEMENTS(HEADER))
+			column_format	= STRARR(N_ELEMENTS(HEADER))
+			data	= STRARR(N_ELEMENTS(HEADER))
+			data_format	= STRARR(N_ELEMENTS(HEADER))
+			FOR j2=0L, N_ELEMENTS(HEADER)-1L DO BEGIN
+
+				;;----- EXTRACT DATA
+				dumstr	= 'STRTRIM(tmp(j).' + STRTRIM(HEADER(j2),2) + ',2)'
+				dumstr2	= 'STRTRIM(MAX(ABS(tmp.' + STRTRIM(HEADER(j2),2) + ')),2)'
+				IF STRPOS(HEADER(j2),'SFR') GE 0L THEN BEGIN
+					dumstr	= 'STRTRIM(tmp(j).SFR(0,' + STRTRIM(n_str,2) + '),2)'
+					dumstr2	= 'STRTRIM(MAX(ABS(tmp.SFR(0,' + STRTRIM(n_str,2) + '))),2)'
+					n_str ++
+				ENDIF
+
+				FOR k=0L, N_ELEMENTS(settings.flux_list)-1L DO BEGIN
+					FOR l=0L, N_ELEMENTS(settings.Mag_r)-1L DO BEGIN
+						dumstr3	= settings.flux_list(k) + STRTRIM(l,2)
+						IF STRPOS(HEADER(j2),dumstr3) GE 0L THEN BEGIN
+							dumstr	= 'STRTRIM(tmp(j).Abmag(0,' + STRTRIM(k,2) + ',' + STRTRIM(l,2) + '),2)'
+							dumstr2	= 'STRTRIM(MAX(ABS(tmp.Abmag(0,' + STRTRIM(k,2) + ',' + STRTRIM(l,2) + '))),2)'
+						ENDIF
+					ENDFOR
+				ENDFOR
+
+				data(j2)	= dumstr
+
+				;;----- SET WIDTH
+				void	= EXECUTE('dat = STRTRIM(' + dumstr2 + ',2)')
+				column_width(j2)	= ((LONG( MAX([STRLEN(HEADER(j2)), STRLEN(dat)]) / 5L) + 1L)*5L > 10L)
+
+				space	= column_width(j2) - STRLEN(HEADER(j2))
+				column_format(j2)	= STRTRIM(space,2) + 'X, A' + STRTRIM(STRLEN(HEADER(j2)),2)
+
+				space	= column_width(j2) - STRLEN(dat)
+				data_format(j2)	= STRTRIM(space,2) + 'X, A' + STRTRIM(STRLEN(dat),2)
+			ENDFOR
+
+			hs	= 'PRINTF, 10, '
+			ds	= 'PRINTF, 10, '
+
+			FOR j2=0L, N_ELEMENTS(HEADER)-1L DO BEGIN
+				hs	+= '"' + HEADER(j2) + '", '
+				ds	+= data(j2) + ','
+			ENDFOR
+
+			hs	+= 'format="('
+			ds	+= 'format="('
+			FOR j2=0L, N_ELEMENTS(HEADER)-1L DO BEGIN
+				hs	+= column_format(j2)
+				ds	+= data_format(j2)
+				IF j2 NE N_ELEMENTS(HEADER)-1L THEN BEGIN
+					hs += ', '
+					ds += ', '
+				ENDIF
+
+			ENDFOR
+			hs	+= ')"'
+			ds	+= ')"'
+		ENDIF
+
+		void	= EXECUTE(hs)
+		FOR j=0L, N_ELEMENTS(tmp)-1L DO BEGIN
+			void	= EXECUTE(ds)
+			;PRINTF, 10, $
+			;	tmp(j).aexp , tmp(j).id , tmp(j).id_mbp , tmp(j).numsubstruct , $
+			;	tmp(j).mvir , tmp(j).mass_tot , tmp(j).mass_fof , tmp(j).mass_200mean , $
+			;	tmp(j).Mass_200crit , tmp(j).Efrac , tmp(j).rvir , tmp(j).r_size , $
+			;	tmp(j).r_200mean , tmp(j).r_200crit , tmp(j).r_halfmass , $
+			;	tmp(j).r_halfmass_200mean , tmp(j).r_halfmass_200crit , tmp(j).rmax , $
+			;	tmp(j).xc ,tmp(j).yc ,tmp(j).zc ,tmp(j).vxc ,tmp(j).vyc ,tmp(j).vzc , $
+			;	tmp(j).lx ,tmp(j).ly ,tmp(j).lz ,tmp(j).sigV ,tmp(j).vmax ,tmp(j).npart , $
+			;	tmp(j).sfr,tmp(j).abmag, tmp(j).abmag, tmp(j).abmag, $
+			;	tmp(j).abmag, tmp(j).abmag, $
+			;	format='(F6.4,4X, I6,4X, I10,4X, I2,4X,' + $
+			;	'F14.0,4X, F14.0,4X, F14.0,4X, F14.0,4X,' + $
+			;       	'F14.0,4X, F6.4,4X, F11.5,4X, F11.5,4X,' + $
+		       	;	'F11.5,4X, F11.5,4X, F11.5,4X,' + $
+			;	'F11.5,4X, F11.5,4X, F11.5,4X,' + $
+			;	'F9.3,4X, F9.3,4X, F9.3,4X, F9.4,4X, F9.4,4X, F9.4,4X,' + $
+			;	'F20.0,4X, F20.0,4X, F20.0,4X, F9.5,4X, F9.5,4X, I8,4X' + $
+			;	STRTRIM(F_SFR,2) + STRTRIM(F_MAG,2) + ')'
+			;STOP
+		ENDFOR
+		CLOSE, 10
+
+		PRINT, i, ' / ', n_gal
+		STOP
+	ENDFOR
+
+	STOP
 	;;-----
 	;; LOAD Tree
 	;;-----
-	RESTORE, settings.dir_tree + 'l1.sav'
+	;RESTORE, settings.dir_tree + 'ctree.sav'
 
 	;;-----
 	;; GET BRANCH
 	;;-----
-	bid	= p_mkcatalog_getbr(settings, complete_tree, gal.id)
+	;bid	= p_mkcatalog_getbr(settings, complete_tree, gal.id)
 
-	gal	= f_rdgal(761L, [settings.column_list], dir=settings.dir_catalog, $
-		horg='g', id0=-1L)
+	;gal	= f_rdgal(761L, [settings.column_list], dir=settings.dir_catalog, $
+	;	horg='g', id0=-1L)
+	;gal 	= f_rdgal(761L, -1L, header=settings.vrheader)
 	ind	= js_bound(gal.xc, gal.yc, gal.zc, $
 		xr=[-1.,1.]*20. + gal(2).xc, $
 		yr=[-1.,1.]*20. + gal(2).yc, $
@@ -71,7 +214,7 @@ PRO p_mkcatalog, settings
 		IF ncut GE 1L THEN BREAK
 	ENDFOR
 	STOP
-	img	= draw_gal(3L, 761L, dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, boxrange=20., min=1e4, max=1e8, /raw)
+	img	= draw_gal(761L, 3L, dir_raw=settings.dir_raw, dir_catalog=settings.dir_catalog, boxrange=20., min=1e4, max=1e8, /raw)
 	cgDisplay, 800, 800
 	cgImage, img
 	STOP
@@ -134,7 +277,8 @@ PRO p_mkcatalog, settings
 
 	;;STOP
 	STOP
-	gal	= f_rdgal(959L, [settings.column_list, 'SFR', 'ABmag'], dir=settings.dir_catalog, horg='g', id0=-1L)
+	;gal	= f_rdgal(959L, [settings.column_list, 'SFR', 'ABmag'], dir=settings.dir_catalog, horg='g', id0=-1L)
+	gal	= f_rdgal(959L, -1L, header=settings.vrheader)
 
 	n_gal	= N_ELEMENTS(gal.id)
 

@@ -372,29 +372,35 @@ END
 ;;-----
 ;; Correct Tree
 ;;-----
-FUNCTION p_TFRun_corr_getbr, tree, gal, snap0
+FUNCTION p_TFRun_corr_getbr, tree, tree_key, gal, snap0
 	bid	= LONARR(N_ELEMENTS(gal))-1L
 	n_tree	= N_ELEMENTS(tree)
 
-	FOR i=0L, n_tree-1L DO BEGIN
-		tmp	= *tree(i)
-		IF tmp.snap(tmp.endind) NE snap0 THEN CONTINUE
-		cut	= WHERE(gal.ID EQ tmp.id(tmp.endind),ncut)
-		IF ncut EQ 0L THEN CONTINUE
-		bid(cut)	= i
-	ENDFOR
+	keyval	= snap0 + gal.id * tree_key(0)
+	bid 	= tree_key(keyval)
+	;FOR i=0L, n_tree-1L DO BEGIN
+	;	tmp	= *tree(i)
+	;	IF tmp.snap(tmp.endind) NE snap0 THEN CONTINUE
+	;	cut	= WHERE(gal.ID EQ tmp.id(tmp.endind),ncut)
+	;	IF ncut EQ 0L THEN CONTINUE
+	;	bid(cut)	= i
+	;ENDFOR
 	RETURN, bid
 END
-FUNCTION p_TFRun_corr_gettree, id0, snap0, tree
-	n_tree	= N_ELEMENTS(tree)
+FUNCTION p_TFRun_corr_gettree, id0, snap0, tree, tree_key
 
-	FOR i=0L, n_tree-1L DO BEGIN
-		tmp	= *tree(i)
-		cut	= WHERE(tmp.snap EQ snap0, ncut)
-		IF ncut EQ 0L THEN CONTINUE
-		IF tmp.ID(cut) EQ id0 THEN RETURN, i
-	ENDFOR
-	RETURN, -1L
+	keyval 	= snap0 + tree_key(0)*id0
+	RETURN, tree_key(keyval)
+
+	;n_tree	= N_ELEMENTS(tree)
+;
+;	;FOR i=0L, n_tree-1L DO BEGIN
+;	;	tmp	= *tree(i)
+;	;	cut	= WHERE(tmp.snap EQ snap0, ncut)
+;	;	IF ncut EQ 0L THEN CONTINUE
+;	;	IF tmp.ID(cut) EQ id0 THEN RETURN, i
+;	;ENDFOR
+	;RETURN, -1L
 END
 FUNCTION p_TFRun_corr_gettlength, tree, gal, bid
 
@@ -433,15 +439,15 @@ FUNCTION p_tfrun_corr_findgal, settings, gal0, snap0, pid, snap, NSNAP=NSNAP
 	ENDFOR
 	settings.p_tfrun_treedir	= treedir
 
-	gal	= f_rdgal(snap, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	gal	= f_rdgal(snap, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 
 	;;----- READ INFO
-	rd_info, info0, file='/storage6/NewHorizon/output_' + $
+	rd_info, info0, file=settings.dir_raw + 'output_' + $
 		STRING(snap0,format='(I5.5)') + '/info_' + $
 		STRING(snap0,format='(I5.5)') + '.txt'
 
-	rd_info, info, file='/storage6/NewHorizon/output_' + $
+	rd_info, info, file=settings.dir_raw + 'output_' + $
 		STRING(snap,format='(I5.5)') + '/info_' + $
 		STRING(snap,format='(I5.5)') + '.txt'
 
@@ -497,8 +503,8 @@ FUNCTION p_TFRun_corr_findbr_byidmbp, settings, tree, complete_tree
 
 	id0	= tree.id(0)
 	snap0	= tree.snap(0)
-	gal0	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=id0)
+	gal0	= f_rdgal(snap0, id0, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 
 	;;-----
 	;; READ THE FIRST 100 PARTICLE (BINDING ENERGY ORDER)
@@ -614,35 +620,56 @@ PRO p_TFRun_findbr_bymerit_selectsnap_scheck, evol, avg, std, cut, sfact
 	cgOplot, [evol(0).snapnum, evol(-1).snapnum], [v2, v2], linestyle=2, thick=2, color='red'
 	cgOplot, evol(cut(0)).snapnum, evol(cut(0)).mass_tot, psym=16, color='red'
 END
-FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
+FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, settings_corr, tree, quantity
 	sanitycheck	= settings.p_TFRun_corr_masslog
-	evol	= f_getevol(tree, tree.id(-1), tree.snap(-1), settings.column_list, $
+	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), datalist=settings.column_list, $
 		horg=settings.horg, dir=settings.dir_catalog)
 
 	mass	= ALOG10(evol.mass_tot)
 	snap	= evol.snapnum
 
-	mass_avg	= MEAN(mass)
-	mass_std	= STDDEV(mass)
-	cut	= WHERE(mass GT mass_avg - sfact * mass_std AND $
-		mass LT mass_avg + sfact * mass_std, ncut)
-	IF ncut EQ 0L THEN BEGIN
-		PRINT, 'no snapshot exists for this mass range'
-		STOP
-	ENDIF
+	n_end 	= settings_corr.nlast < (N_ELEMENTS(mass)-1L)
+	;;
+	delM0	= 1d15
+	FOR i=0L, n_end-1L DO BEGIN
+		ind0	= i
+		ind1 	= (i+settings_corr.nstep) < (N_ELEMENTS(mass)-1L)
+		delM	= MAX(mass(ind0:ind1)) - MIN(mass(ind0:ind1))
+		IF delM LT delm0 THEN BEGIN
+			delm0 	= delM
+			cut 	= i
+		ENDIF
+	ENDFOR
+	;delM	= mass(1L:*) - mass(0L:-2)
+	;delM	= delM(0L:n_end-2L)
+	;cut	= WHERE(delM EQ MIN(delM)) + 1L
+	;cut 	= cut(0)
+
+	;;
+	mass_avg	= MEAN(mass(0L:n_end))
+	mass_std	= STDDEV(mass(0L:n_end))
+
+	;cut 	= WHERE(ABS(mass-mass_avg) LT settings_corr.sfact * mass_std, ncut)
+	;cut	= WHERE(mass GT mass_avg - settings.sfact * mass_std AND $
+	;	mass LT mass_avg + settings.sfact * mass_std, ncut)
+	;IF ncut EQ 0L THEN BEGIN
+	;	PRINT, 'no snapshot exists for this mass range'
+	;	STOP
+	;ENDIF
 
 	IF sanitycheck EQ 1L THEN BEGIN
 		PRINT, 'Sanity Check whether this range is proper'
-		p_TFRun_findbr_bymerit_selectsnap_scheck, evol, mass_avg, mass_std, cut, sfact
+		p_TFRun_findbr_bymerit_selectsnap_scheck, evol, mass_avg, mass_std, cut, settings_corr.sfact
 		STOP
 	ENDIF
 
-	cut2	= WHERE(tree.snap(cut) - tree.snap(0) GT 20.)
-	cut	= cut(cut2(0))
+	;cut2	= WHERE(tree.snap(cut) - tree.snap(0) GT 20.)
+	;cut	= cut(cut2(0))
+	;cut 	= cut(0)
 
 	;; OUTPUT
 	snap0	= evol(cut).snapnum
-	rd_info, info0, file='/storage6/NewHorizon/output_' + $
+	rd_info, info0, file=settings.dir_raw + 'output_' + $
 		STRING(snap0,format='(I5.5)') + '/info_' + $
 		STRING(snap0,format='(I5.5)') + '.txt'
 
@@ -653,25 +680,48 @@ FUNCTION p_TFRun_findbr_bymerit_selectsnap, settings, tree, quantity, sfact
 	quantity	= {mass:mass0, pos:pos0, speed:speed0, time:info0.tGyr, unit_l:info0.unit_l}
 	RETURN, cut
 END
-FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
+;;----- LINK GALAXY WITH NO TREE
+PRO p_TFRun_findbr_bymerit_mergenotreegal, tree, id, snap
+	length 	= N_ELEMENTS(tree.id)
+	nbranch = N_ELEMENTS(tree.m_id)
+	tree 	= {$
+		ID:[id,tree.id], $
+		SNAP:[snap,tree.snap], $
+		STAT:tree.stat, $
+		P_SNAP:[-1L, tree.p_snap], $
+		P_ID:[-1L, tree.p_id], $
+		P_MERIT:[-1.d, tree.p_merit], $
+		M_ID:tree.m_id, $
+		M_MERIT:tree.m_merit, $
+		M_BID:tree.m_bid, $
+		M_SNAP:tree.m_snap, $
+		D_ID:[tree.id(0), tree.d_id], $
+		D_SNAP:[tree.snap(0), tree.d_snap], $
+		ENDIND:tree.endind+1L, $
+		NUMPROG:tree.numprog}
+END
+;; FINDBR MAIN
+FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, tree_key
 
-	nsearch	= 4L
-	sfact	= 1.0
-	;;----- First Get Evolution of the target galaxy
-	mass0	= 0.
-	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, tree, quantity, sfact)
+	nsearch	= settings_corr.nsearch		;; # of snapsts to search
 
-	;;----- GET PID AT THIS SNAPSHOT
+	;;----- First Pick the snapshot where to stitch
+	;mass0	= 0.
+	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, settings_corr, tree, quantity)
+
+	;;----- GET Partile IDs AT THIS SNAPSHOT
 	id0	= tree.id(ind)
 	snap0	= tree.snap(ind)
-
 	pid0	= p_TFRun_getpid(settings, id0, snap0)
 
-	;;----- FIND GAL
+	;;----- FIND GAL with merit scores
+
+	;; Fortran routine settings
 	ftr_name	= settings.dir_lib + 'sub_ftn/get_merit.so'
 	larr = LONARR(20) & darr = DBLARR(20)
 		larr(0)	= N_ELEMENTS(pid0)
 		larr(2)	= settings.num_thread
+
 
 	treedir	= settings.p_tfrun_treedir
 	settings.p_tfrun_treedir	= 'prg'
@@ -681,24 +731,25 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 	idlist	= LONARR(nsearch)
 
 	snap0	= tree.snap(0)
-	FOR i=0L, nsearch-1L DO BEGIN
 
+	;; Find a galaxy with the highest merit at each snapshot
+	FOR i=0L, nsearch-1L DO BEGIN
+		IF settings.P_TFrun_corr_timelog EQ 1L THEN TIC
 		;;----- FIND SNAPSHOT
 		snap	= snap0
-		FOR j=0L, 10L*(i+1L)-1L DO BEGIN
+		FOR j=0L, settings_corr.nstep*(i+1L)-1L DO BEGIN
 			snap	= p_tfrun_findnextsnap(settings, snap)
 			IF snap EQ -1L THEN BREAK
 		ENDFOR
 		IF snap EQ -1L THEN CONTINUE
 
 		;;----- READ GAL AT THIS SNAPSHOT
-		;gal	= f_rdgal(snap, ['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
-		;	id0=-1L, dir=settings.dir_catalog, $
-		;	horg=settings.horg)
+		gal	= f_rdgal(snap, -1L, column_list=['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
+			dir=settings.dir_catalog, $
+			horg=settings.horg)
 
-		gal	= f_rdgalquick(snap, dir=settings.dir_catalog, horg=settings.horg)
 		;;---- READ INFO
-		rd_info, info0, file='/storage6/NewHorizon/output_' + $
+		rd_info, info0, file=settings.dir_raw + '/output_' + $
 			STRING(snap,format='(I5.5)') + '/info_' + $
 			STRING(snap,format='(I5.5)') + '.txt'
 
@@ -711,14 +762,14 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		ngal	= N_ELEMENTS(gal)
 		mer_dum	= DBLARR(ngal)
 
-		;; FIND THE FIRST 100 GALAXIES AROUND
+		;; FIND THE FIRST 10% GALAXIES AROUND based on the code unit
 
 		d3d	= (gal.xc - quantity.pos(0))^2 + $
 			(gal.yc - quantity.pos(1))^2 + $
 			(gal.zc - quantity.pos(2))^2
 		d3d_s	= d3d(SORT(d3d))
 		;dcut	= d3d_s(50<(ngal-1L))
-		dcut	= d3d_s(LONG(ngal/10))
+		dcut	= d3d_s( LONG(ngal/10) )
 
 		FOR j=0L, ngal-1L DO BEGIN
 
@@ -737,8 +788,8 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 			;;----- BY THE FIRST 100th DISTANCE
 			IF d3d(j) GT dcut THEN CONTINUE
 
-			;;----- SKIP THIS GALAXY IF HAS A FULL TREE
-			tind	= p_TFRun_corr_gettree(gal(j).id, snap, complete_tree)
+			;;----- SKIP THIS GALAXY IF HAS A FULL TREE 123123123123
+			tind	= p_TFRun_corr_gettree(gal(j).id, snap, complete_tree, tree_key)
 			IF tind GE 0L THEN $
 				IF (*complete_tree(tind)).snap(-1) EQ $
 				settings.p_TFrun_corr_snap_f THEN CONTINUE
@@ -774,7 +825,19 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 		merit(i)	= mer_val
 		snaplist(i)	= snap
 		idlist(i)	= id_val
+
+		;; If this merit is high enough, end this loop
+		IF merit(i) GT settings_corr.meritU THEN BREAK
+
+		IF settings.P_TFrun_corr_timelog EQ 1L THEN BEGIN
+			TOC, elapsed_time=elt
+			PRINT, 'time : ', i, ' / ', nsearch
+			PRINT, '	', snap0, ' -> ', snap
+			PRINT, '	', elt, ' [s]'
+			PRINT, '	', merit(i)
+		ENDIF
 	ENDFOR
+
 	settings.p_tfrun_treedir	= treedir
 
 	ind	= REVERSE(SORT(merit))
@@ -782,30 +845,89 @@ FUNCTION p_TFRun_findbr_bymerit, settings, tree, complete_tree
 	id	= idlist(ind)
 	snap	= snaplist(ind)
 
-	FOR j=0L, nsearch-1L DO BEGIN
-		FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
-			tmp	= *complete_tree(i)
-			cut	= WHERE(tmp.snap EQ snap(j), ncut)
-			IF ncut EQ 0L THEN CONTINUE
-			IF tmp.id(cut) EQ id(j) THEN BEGIN
-				PRINT, '%123123-----'
-				PRINT, '	CONNECTION DONE BY DIRECTLY COMPUTING MERIT SCORES'
-				PRINT, '	ID = ' + STRING(tree.id(0), format='(I6.6)') + ' ---> ' + $
-					' ID = ' + STRING(id(j), format='(I6.6)')
-				PRINT, '	SS = ' + STRING(tree.snap(0), format='(I4.4)') + '      ' + $
-					' SS = ' + STRING(snap(j), format='(I4.4)')
-				PRINT, '	MERIT SCORE = ', merit(j)
-				PRINT, '%123123-----'
-				RETURN, i
-			ENDIF
-		ENDFOR
-	ENDFOR
+	IF merit(0)/(merit(1)+1e-32) LT 2. THEN BEGIN	;; IF THE PRIMARY PROGENITOR HAS NOT ENOUGH MERIT SCORE
+		cut1	= WHERE(MERIT GT MERIT(0)/2.)
+		cut2 	= WHERE(MERIT LT MERIT(0)/2., ncut2)
 
-	RETURN, -1L
+		merit2	= merit(cut1)
+		id2 	= id(cut1)
+		snap2 	= snap(cut1)
+
+		sortind = REVERSE(SORT(snap2))
+		merit2 	= merit2(sortind)
+		id2 	= id2(sortind)
+		snap2	= snap2(sortind)
+		IF ncut2 GE 1L THEN BEGIN
+			merit 	= [merit2, merit(cut2)]
+			id 		= [id2, id(cut2)]
+			snap 	= [snap2, snap(cut2)]
+		ENDIF
+	ENDIF
+
+	FOR i=0L, N_ELEMENTS(ind)-1L DO BEGIN
+		keyval 	= snap(i) + tree_key(0)*id(i)
+		keyval	= tree_key(keyval)
+		IF keyval LT 0L THEN BEGIN
+			IF merit(i) GT settings_corr.meritL THEN BEGIN
+				p_TFRun_findbr_bymerit_mergenotreegal, tree, id(i), snap(i)
+				PRINT, '%123123-----'
+				PRINT, '	CONNECTION DONE BY DIRECTLY COMPUTING MERIT SCORES (to a galaxy w/o tree)'
+				PRINT, '	ID = ' + STRING(tree.id(1), format='(I6.6)') + ' ---> ' + $
+					' ID = ' + STRING(id(i), format='(I6.6)')
+				PRINT, '	SS = ' + STRING(tree.snap(1), format='(I4.4)') + '      ' + $
+					' SS = ' + STRING(snap(i), format='(I4.4)')
+				PRINT, '	MERIT SCORE = ', merit(i)
+				PRINT, '%123123-----'
+				RETURN, -2
+			ENDIF
+			CONTINUE
+		ENDIF
+
+		IF merit(i) LT settings_corr.meritL THEN BEGIN
+			PRINT, '%123123-----'
+			PRINT, '	STOP MERGING DUE TO TOO LOW MERIT'
+			PRINT, '		merit = ', merit(i)
+			PRINT, '%123123-----'
+			RETURN, -1
+		ENDIF ELSE BEGIN
+			PRINT, '%123123-----'
+			PRINT, '	CONNECTION DONE BY DIRECTLY COMPUTING MERIT SCORES'
+			PRINT, '	ID = ' + STRING(tree.id(0), format='(I6.6)') + ' ---> ' + $
+				' ID = ' + STRING(id(i), format='(I6.6)')
+			PRINT, '	SS = ' + STRING(tree.snap(0), format='(I4.4)') + '      ' + $
+				' SS = ' + STRING(snap(i), format='(I4.4)')
+			PRINT, '	MERIT SCORE = ', merit(i)
+			PRINT, '%123123-----'
+			RETURN, keyval
+		ENDELSE
+	ENDFOR
+	RETURN, -1
+
+
+
+	;FOR j=0L, nsearch-1L DO BEGIN
+	;	FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
+	;		tmp	= *complete_tree(i)
+	;		cut	= WHERE(tmp.snap EQ snap(j), ncut)
+	;		IF ncut EQ 0L THEN CONTINUE
+	;		IF tmp.id(cut) EQ id(j) THEN BEGIN
+	;			PRINT, '%123123-----'
+	;			PRINT, '	CONNECTION DONE BY DIRECTLY COMPUTING MERIT SCORES'
+	;			PRINT, '	ID = ' + STRING(tree.id(0), format='(I6.6)') + ' ---> ' + $
+	;				' ID = ' + STRING(id(j), format='(I6.6)')
+	;			PRINT, '	SS = ' + STRING(tree.snap(0), format='(I4.4)') + '      ' + $
+	;				' SS = ' + STRING(snap(j), format='(I4.4)')
+	;			PRINT, '	MERIT SCORE = ', merit(j)
+	;			PRINT, '%123123-----'
+	;			RETURN, i
+	;		ENDIF
+	;	ENDFOR
+	;ENDFOR
+	;RETURN, -1L
 END
 
 ;;----- LINK
-FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, ind, remove_ind
+FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, tree_key, bid, ind, remove_ind
 
 	ind	= ind(0)
 	tree_tolink	= *complete_tree(ind)
@@ -825,6 +947,10 @@ FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, ind, remove_ind
 		D_SNAP:	-1L, $
 		endind:	-1L, $
 		numprog:-1L}, /no_copy)
+
+	keyval	= tree_key(0)
+	tree_key(WHERE(tree_key EQ ind)) = bid
+	tree_key(0)	= keyval
 
 	snap0	= tree.snap(0)
 	cut	= WHERE(tree_tolink.snap LT snap0, ncut)
@@ -872,7 +998,7 @@ FUNCTION p_TFRun_corr_link, settings, tree, complete_tree, ind, remove_ind
 END
 PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 
-	evol	= f_getevol(tree, tree.id(-1), tree.snap(-1), settings.column_list, $
+	evol	= f_getevol(tree, tree.snap(-1), tree.id(-1), datalist=settings.column_list, $
 		horg=settings.horg, dir=settings.dir_catalog)
 
 	cut	= WHERE(evol.snapnum EQ n0)
@@ -896,10 +1022,10 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 	FOR i=0, 4L DO BEGIN
 		IF cut-2L+i LT 0L THEN CONTINUE
 		img	= draw_gal($
-			evol(cut-2L+i).id, evol(cut-2L+i).snapnum, $
+			evol(cut-2L+i).snapnum, evol(cut-2L+i).id, $
 			num_thread=settings.num_thread, dir_raw=settings.dir_raw, $
 			dir_catalog=settings.dir_catalog, /raw, boxrange=20., $
-			n_pix=n_pix, min=1e1, max=1e5)
+			n_pix=n_pix, min=1e1, max=1e5, proj='xy')
 		xr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).xc
 		yr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).yc
 		zr(*,i)	= [-1., 1.]*20. + evol(cut-2L+i).zc
@@ -910,8 +1036,8 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 			SIN(ang)*evol(cut-2L+i).r_halfmass + evol(cut-2L+i).yc, $
 		       linestyle=2, color='red', thick=2
 
-	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, settings.column_list, $
-			dir=settings.dir_catalog, horg='g', id0=-1L)
+	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, -1L, column_list=settings.column_list, $
+			dir=settings.dir_catalog, horg=settings.horg)
 		ind	= js_bound(gal0.xc, gal0.yc, gal0.zc, $
 			xr=xr(*,i), yr=yr(*,i), zr=zr(*,i))
 		cgOplot, gal0(ind).xc, gal0(ind).yc, psym=9, color='blue', thick=1, symsize=2.0
@@ -936,20 +1062,30 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 
 END
 
-PRO p_TFRun_corr, settings, complete_tree 
+PRO p_TFRun_corr, settings, complete_tree, tree_key
+
+	;;----- Settings for Tree correction
+	settings_corr	= {$
+		nsearch:settings.P_TFrun_corr_msearch_nsearch, $		;; # of snapshots to search further
+		nstep:settings.P_TFrun_corr_msearch_nstep, $			;; Snapshot interval for each search
+		meritU:settings.P_TFrun_corr_msearch_meritU, $			;; Merit cut for Seacrhing
+		meritL:settings.P_TFrun_corr_msearch_meritL, $			;; Merit cut for Searching
+		sfact:1.d, $		;; Sigma range when finding the starting snapshot
+		nlast:settings.P_TFrun_corr_msearch_nlast, $		;; # of snapshots when computing mean/std mass to find starting snapshot
+		a:'a'}
 
 	snap0	= settings.p_TFRun_corr_snap_f
 
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
-	;gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-	;	horg=settings.horg, id0=-1L)
-	gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
-	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
-
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
+	;gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
+	bid	= p_TFRun_corr_getbr(complete_tree, tree_key, gal, snap0)
 	corr_idlist	= LONARR(N_ELEMENTS(gal))-1L
 
 	;;----- CONNECT
+	
 	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
@@ -959,23 +1095,29 @@ PRO p_TFRun_corr, settings, complete_tree
 			ENDIF
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
 			SAVE, filename=settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav', $
-			complete_tree, corr_idlist
+			complete_tree, corr_idlist, tree_key
 			STOP
 		ENDIF
+
+;IF gal(i).ID NE 133L THEN CONTINUE ;;%456456
+
 		;IF gal(i).ID LE 232L THEN CONTINUE
 		IF bid(i) LT 0L THEN CONTINUE
 		tree	= *complete_tree(bid(i))
 		tree0	= tree
 		IF tree.snap(0) LE settings.P_TFrun_corr_snap_i THEN CONTINUE
 
+		PRINT, '%123123	-----'
+		PRINT, '	Tree Seacrhing for galaxy #ID = ', gal(i).ID, tree.snap(0)
+
 		ind	= bid(i)
+
 		;;---- SEARCH LINKED TREE
 		REPEAT BEGIN
 			;;----- BY DIRECTLY COMPARING MERIT SCORES
 			n0	= tree.snap(0)
 
-			blist	= p_TFRun_findbr_bymerit(settings, tree, complete_tree)
-			;;;;;
+			blist	= p_TFRun_findbr_bymerit(settings, settings_corr, tree, complete_tree, tree_key)
 
 			;n0	= tree.snap(0)
 			;id0	= tree.id(0)
@@ -996,30 +1138,50 @@ PRO p_TFRun_corr, settings, complete_tree
 
 			;	ind	= p_TFRun_corr_detbr(settings, tree, complete_tree, blist)
 			;ENDELSE
-			;;
 
-			IF MAX(blist) LT 0L THEN BEGIN
+			IF blist EQ -1L THEN BEGIN
 				n1	= n0
 				;STOP
+			ENDIF ELSE IF blist EQ -2L THEN BEGIN
+				n1 	= tree.snap(0)
 			ENDIF ELSE BEGIN
-				tree	= p_TFRun_corr_link(settings, tree, complete_tree, blist, remove_ind)
+				tree	= p_TFRun_corr_link(settings, tree, complete_tree, tree_key, ind, blist, remove_ind)
+
 
 				IF settings.P_TFRun_corr_log EQ 1L THEN $
 					P_TFRun_corr_sanitycheck, settings, tree, n0
-
-				PRINT, gal(i).id
-				;STOP
 				n1	= tree.snap(0)
 			ENDELSE
 		ENDREP UNTIL tree.snap(0) LE settings.P_TFrun_corr_snap_i OR n0 EQ n1
 
+			;g	= f_getevol(tree, 1026L, gal(i).ID, datalist=['Mass_tot'], dir='/storage5/NewHorizon/VELOCIraptor/', horg=settings.horg)
+			;IF settings.horg EQ 'h' THEN dir_horg = STRTRIM('halo',2)
+			;IF settings.horg EQ 'g' THEN dir_horg = STRTRIM('galaxy',2)
+			;cgPS_open, '/storage6/jinsu/var/Paper4_Group/catalog/' + dir_horg + '/l1/gal_' + STRING(gal(i).ID, format='(I4.4)') + '.eps', /encapsulated
+			;cgDisplay, 800, 800
+			;!p.font = -1 & !p.charsize = 1.5 & !p.charthick = 4.0
+			;cgPlot, g.snapnum, g.mass_tot, /ylog, linestyle=0, position=[0.18, 0.18, 0.95, 0.95], xrange=[0., 1200.], $
+			;	xtitle='Snap #', ytitle=textoidl('Stellar Mass [M' + sunsymbol() + ']')
+			;cgOplot, [110, 110], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.2
+			;cgOplot, [335, 335], [1e6, 1e13], linestyle=2, color='red', thick=3	;; a~0.4
+			;cut_merit	= WHERE(tree.m_merit GT 0.001 , ncut_merit)
+			;IF ncut_merit GE 1L THEN BEGIN
+			;	FOR j=0L, ncut_merit-1L DO BEGIN
+			;		ss 	= tree.m_snap(cut_merit(j))
+			;		mm 	= g(WHERE(g.snapnum EQ ss)).mass_tot
+			;		cgOplot, ss, mm, psym=9, color='red', symsize=1.5
+			;	ENDFOR
+			;ENDIF
+			;cgPS_close
 		complete_tree(bid(i))	= PTR_NEW(tree, /no_copy)
 		corr_idlist(i)	= gal(i).ID
+		;STOP	;456456
+		IF tree_key(0) NE 10000L THEN STOP
 	ENDFOR
 	cut	= WHERE(corr_idlist GE 0L, ncut)
 	IF ncut GE 1L THEN corr_idlist = corr_idlist(cut)
 
-	SAVE, filename=settings.dir_tree + 'ctree.sav', complete_tree, corr_idlist
+	SAVE, filename=settings.dir_tree + 'ctree.sav', complete_tree, corr_idlist, tree_key
 	;; REMOVE IND
 END
 
@@ -1096,8 +1258,8 @@ PRO p_TFRun_save, settings, complete_tree
 	;;-----
 	;; LOAD GAL
 	;;-----
-	gal	= f_rdgal(snap0, settings.column_list, dir=settings.dir_catalog, $
-		horg=settings.horg, id0=-1L)
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+		horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
 	;;-----
@@ -1150,7 +1312,94 @@ PRO p_tfrun_reallocate_ct, complete_tree, n_comp, maxgind
 	complete_tree	= complete_tree2
 END
 
+;;----- GEN KEY
+FUNCTION p_TFRun_makebr_genkey, settings, tree
 
+	MAX_snap	= 200L
+	MAX_ID		= 10000L
+
+	genkey_redo:
+	tree_key 	= LONARR(MAX_snap + settings.P_TFrun_bidkey*MAX_ID) - 1L
+
+	n_tree 		= N_ELEMENTS(tree)
+	FOR i=0L, n_tree-1L DO BEGIN
+		tmp	 	= *tree(i)
+		s 		= tmp.snap
+		id 		= tmp.id
+		ind 	= s + settings.P_TFrun_bidkey*id
+
+		IF MAX(id) GT MAX_ID THEN BEGIN
+			MAX_ID 		= MAX(id) + 1L
+			GOTO, genkey_redo
+		ENDIF
+		IF MAX(s) GT MAX_snap THEN BEGIN
+			MAX_snap 	= MAX(s) + 1L
+			GOTO, genkey_redo
+		ENDIF
+
+		IF MAX(s) GT settings.P_TFrun_bidkey THEN BEGIN
+			power 	= LOGN(ALOG10(MAX(s))) + 1.d
+			settings.P_TFrun_bidkey = LONG(10.d^power)
+			GOTO, genkey_redo
+		ENDIF
+
+
+		tree_key(ind) 	= i
+	ENDFOR
+	RETURN, tree_key
+END
+
+;;-----
+;; CNAME
+;;-----
+PRO p_tfrun_makebr_cname, settings
+	dir	= settings.dir_tree
+        flist   = dir + '/tree.snaplist.txt'
+        slist   = LONARR(FILE_LINES(flist))
+        OPENR, 10, flist
+        FOR i=0L, FILE_LINES(flist)-1L DO BEGIN
+                str     = ' '
+                READF, 10, str
+                ind     = STRPOS(str,'snap_')
+                str     = STRMID(str,ind+5,4)
+                slist(i)= LONG(str)
+        ENDFOR
+        CLOSE, 10
+
+        tfile   = FILE_SEARCH(dir + '/tree.snapshot*.tree')
+        IF N_ELEMENTS(tfile) NE N_ELEMENTS(slist) THEN BEGIN
+                PRINT, 'wrong number of tree results'
+                STOP
+        ENDIF
+
+        tnumber = LONARR(N_ELEMENTS(tfile))
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                str     = tfile(i)
+                str     = STRSPLIT(str, '_' ,/extract)
+                str     = str(1)
+                str     = STRSPLIT(str, '.', /extract)
+                str     = str(0)
+                tnumber(i)      = LONG(str)
+        ENDFOR
+        cut     = SORT(tnumber)
+        tfile   = tfile(cut)
+
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                orgname = tfile(i)
+                newname = 'tree.snapshot_' + STRING(slist(i),format='(I4.4)') + 'VELOCIraptor'
+                IF orgname EQ newname THEN CONTINUE
+                tmp     = 'mv ' + $
+                        orgname + ' ' + dir + '/' + newname
+                SPAWN, tmp
+        ENDFOR
+
+        FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
+                orgname = 'tree.snapshot_' + STRING(slist(i),format='(I4.4)') + 'VELOCIraptor'
+                newname = orgname + '.tree'
+                tmp     = 'mv ' + dir + '/' + orgname + ' ' + dir + '/' + newname
+                SPAWN, tmp
+        ENDFOR
+END
 
 PRO p_tfrun, settings
 
@@ -1177,6 +1426,11 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	evoldum	= {ID:LONARR(maxgind)-1L, snap:LONARR(maxgind)-1L, merit:DBLARR(maxgind)-1.d}
 
 	;;-----
+	;; CHANGE TREE FILE NAME
+	;;-----
+	p_tfrun_makebr_cname, settings
+
+	;;-----
 	;; GO FORWARD
 	;;-----
 
@@ -1193,7 +1447,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
-			IF settings.p_TFrun_corr_nn NE 3L THEN BEGIN
+			IF i NE treeset.N0 THEN BEGIN
 				RESTORE, settings.dir_tree + 'tree_' + STRING(i,format='(I4.4)') + '.sav'
 			ENDIF
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L + 10L THEN BEGIN
@@ -1220,7 +1474,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;; LAST SNAPSHOT
 		;;-----
 		IF i EQ treeset.N1 OR snap_next EQ -1L THEN BEGIN
-			g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1L, $
+			g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'],$
 				dir=settings.dir_catalog, horg=settings.horg)
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
 				tree, evoldum, gind, g_curr, snap_curr
@@ -1242,17 +1496,17 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		treefname	= settings.dir_tree + 'tree.snapshot_' + $
 			STRING(snap_curr,format='(I4.4)') + 'VELOCIraptor.tree'
 		t_curr	= p_tfrun_rdhdf5(treefname, treeset)
-		g_curr	= f_rdgal(snap_curr, ['ID', 'npart'], id0=-1, $
+		g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
-		g_next	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
+		g_next	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
 		IF t_curr.nlink GE 2L THEN BEGIN
 			FOR i2=0L, t_curr.nlink-2L DO BEGIN
 				snap_next	= p_tfrun_findnextsnap(settings, snap_next)
 				IF snap_next EQ -1L THEN CONTINUE
-				g_dum	= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
+				g_dum	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 					dir=settings.dir_catalog, horg=settings.horg)
 				g_next	= [g_next, g_dum]
 			ENDFOR
@@ -1297,15 +1551,19 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		FOR ii=0L, N_TAGS(treelog)-1L DO treelog.(ii) = 0L
 	ENDFOR
 
-	STOP
-	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree
+	;; GENERATE KEY
+	tree_key	= p_TFRun_makebr_genkey(settings, complete_tree)
+	tree_key(0) = settings.P_TFrun_bidkey
+	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree, tree_key
+	PRINT, 'Done ^-^'
+
 	STOP
 ENDIF
 
 IF settings.p_tfrun_corr EQ 1L THEN BEGIN
 	RESTORE, settings.dir_tree + 'tree.sav'
 
-	p_TFRun_corr, settings, complete_tree
+	p_TFRun_corr, settings, complete_tree, tree_key
 
 	;PRINT, 'Mergered branch mutual link'
 	;PRINT, 'finish branch modulate m_ID'
