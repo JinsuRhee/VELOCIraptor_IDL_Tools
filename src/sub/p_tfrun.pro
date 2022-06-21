@@ -1183,6 +1183,19 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 	cut	= WHERE(corr_idlist GE 0L, ncut)
 	IF ncut GE 1L THEN corr_idlist = corr_idlist(cut)
 
+	FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
+		tt	= *complete_tree(i)
+		IF TYPENAME(tt) EQ 'UNDEFINED' THEN CONTINUE
+		keyval	= tt.snap + tree_key(0)*tt.id
+		keyind	= tree_key(keyval)
+		void	= WHERE(keyind NE i, nn)
+		IF nn GE 1L THEN BEGIN
+			PRINT, '%123123-----'
+			PRINT, '	WRONG ASSIGNMENT OF KEY'
+			STOP
+		ENDIF
+	ENDFOR
+
 	SAVE, filename=settings.dir_tree + 'ctree.sav', complete_tree, corr_idlist, tree_key
 	;; REMOVE IND
 END
@@ -1559,6 +1572,19 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 	SAVE, filename=settings.dir_tree + 'tree.sav', complete_tree, tree_key
 	PRINT, 'Done ^-^'
 
+	FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
+		tt	= *complete_tree(i)
+		IF TYPENAME(tt) EQ 'UNDEFINED' THEN CONTINUE
+		keyval	= tt.snap + tree_key(0)*tt.id
+		keyind	= tree_key(keyval)
+		void	= WHERE(keyind NE i, nn)
+		IF nn GE 1L THEN BEGIN
+			PRINT, '%123123-----'
+			PRINT, '	WRONG ASSIGNMENT OF KEY'
+			STOP
+		ENDIF
+	ENDFOR
+			
 	STOP
 ENDIF
 
