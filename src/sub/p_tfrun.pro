@@ -878,6 +878,8 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 					' SS = ' + STRING(snap(i), format='(I4.4)')
 				PRINT, '	MERIT SCORE = ', merit(i)
 				PRINT, '%123123-----'
+
+				tree_key(keyval)	= tree_key(tree.snap(1) + tree.id(1)*tree_key(0))
 				RETURN, -2
 			ENDIF
 			CONTINUE
