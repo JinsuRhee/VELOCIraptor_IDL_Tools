@@ -35,6 +35,13 @@ IF run EQ 0L THEN RETURN
 			ib = (*data.rv_id).b_ind(i,*) & iu = (*data.rv_id).u_ind(i,*)
 			ptcl_id	= [(*data.rv_id).p_id(ib(0):ib(1)), $
 				(*data.rv_id).p_id(iu(0):iu(1))]
+
+			cut	= WHERE(ptcl_id GT -922337203685477580LL, ncut)
+			IF ncut NE (*data.rv_raw).npart(i) THEN BEGIN
+				PRINT, 'WRONG PTCL ID ARRAY'
+				STOP
+			ENDIF
+			ptcl_id	= ptcl_id(cut)
 		ENDIF
 
 
