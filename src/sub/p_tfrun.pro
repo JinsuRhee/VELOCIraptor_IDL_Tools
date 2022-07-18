@@ -14,9 +14,14 @@ FUNCTION p_tfrun_getpid, settings, id0, snap0
 		STRING(id0,format='(I6.6)') + '.hdf5'
 
 	;; HDF5 open
-	fid = H5F_OPEN(fname) & did = H5D_OPEN(fid, '/P_Prop/P_ID')
-	pid = H5D_READ(did) & H5D_CLOSE, did & H5F_CLOSE, fid
-	RETURN, pid
+	fid = H5F_OPEN(fname)
+	did = H5D_OPEN(fid, '/P_Prop/P_ID') & pid = H5D_READ(did) & H5D_CLOSE, did
+	did = H5D_OPEN(fid, '/G_Prop/G_npart') & npart = H5D_READ(did) & H5D_CLOSE, did
+	H5F_CLOSE, fid
+
+	cut 	= WHERE(pid GT -922337203685477580LL, ncut)
+	IF ncut NE npart THEN STOP
+	RETURN, pid(cut)
 END
 ;;-----
 ;; READ HDF5
@@ -191,7 +196,7 @@ END
 PRO p_tfrun_finishbranch, settings, tree, complete_tree, n_comp, ind, stat
 	a	= tree(ind)
 	nn	= a.endind
-	nn2	= a.numprog-2L
+	nn2	= (a.numprog-2L) > 0L
 	b	= {ID:a.ID(0L:nn), snap:a.snap(0L:nn), stat:stat, $
 		p_snap:a.p_snap(0L:nn), p_id:a.p_id(0L:nn), p_merit:a.p_merit(0L:nn), $
 		m_ID:a.m_ID(0:nn2), m_merit:a.m_merit(0:nn2), m_bid:a.m_bid(0L:nn2), m_snap:a.m_snap(0L:nn2), $
@@ -700,19 +705,89 @@ PRO p_TFRun_findbr_bymerit_mergenotreegal, tree, id, snap
 		ENDIND:tree.endind+1L, $
 		NUMPROG:tree.numprog}
 END
+
+;; GET PARTICLE LIST TO BE STICHTED
+FUNCTION p_TFRun_findbr_bymerit_pickidlist, settings, tree, quantity
+
+	n_step 	= 10L
+	n_interval 	= 2L
+	
+	npart_list	= LONARR(n_step)
+	ind_list	= LONARR(n_step)
+	i0 		= 0L
+	i1 		= 0L
+	npart 	= 0L
+	REPEAT BEGIN
+		dum 	= f_rdgal(tree.snap(i0), tree.id(i0), horg=settings.horg, column_list=settings.column_list, dir=settings.dir_catalog)
+		npart_list(i1) 	= dum.npart
+		ind_list(i1) 	= i0
+
+		IF i1 EQ 0L THEN BEGIN
+			snap0	= dum.snapnum
+			rd_info, info0, file=settings.dir_raw + 'output_' + $
+				STRING(snap0,format='(I5.5)') + '/info_' + $
+				STRING(snap0,format='(I5.5)') + '.txt'
+			pos = [dum.xc, dum.yc, dum.zc] * 3.086d21 / info0.unit_l
+
+			quantity	= {pos:pos}
+		ENDIF
+
+		i1 ++
+		i0 	+= n_interval
+		npart 	+= dum.npart
+
+		IF i0 GE N_ELEMENTS(tree.id) THEN BEGIN
+			n_step 	= i1
+			npart_list 	= npart_list(0L:i1-1L)
+			ind_list 	= ind_list(0L:i1-1L)
+			BREAK
+		ENDIF
+	ENDREP UNTIL i1 EQ 10L
+
+	maxnpart	= MAX(npart_list)
+	
+	
+	idlist 	= LON64ARR(npart)
+
+	i0 	= 0L
+	FOR i=0L, n_step-1L DO BEGIN
+		pid0 	= p_TFRun_getpid(settings, tree.id(ind_list(i)), tree.snap(ind_list(i)))
+		idlist(i0:i0+N_ELEMENTS(pid0)-1L) = pid0
+		i0 	+= N_ELEMENTS(pid0)
+	ENDFOR
+
+	idlist 	= idlist(SORT(idlist))
+	uind 	= UNIQ(idlist)
+	uid 	= idlist(uind)
+	numid 	= uind - [-1L,uind(0L:-2)]
+	cut 	= WHERE(numid GE n_step/4, ncut)
+	IF ncut*1.d / maxnpart LT 0.001 THEN STOP
+
+	pid0 	= uid(cut)
+
+
+	RETURN, pid0
+END
 ;; FINDBR MAIN
 FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, tree_key
 
 	nsearch	= settings_corr.nsearch		;; # of snapsts to search
 
-	;;----- First Pick the snapshot where to stitch
-	;mass0	= 0.
-	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, settings_corr, tree, quantity)
+	;	;;----- First Pick the snapshot where to stitch
+	;	;mass0	= 0.
+	;	ind	= p_TFRun_findbr_bymerit_selectsnap(settings, settings_corr, tree, quantity)
+	;
+	;	;;----- GET Partile IDs AT THIS SNAPSHOT
+	;	id0	= tree.id(ind)
+	;	snap0	= tree.snap(ind)
+	;	pid0	= p_TFRun_getpid(settings, id0, snap0)
+	; 	mtype 	= 1L
 
-	;;----- GET Partile IDs AT THIS SNAPSHOT
-	id0	= tree.id(ind)
-	snap0	= tree.snap(ind)
-	pid0	= p_TFRun_getpid(settings, id0, snap0)
+	;;----- Pick particle ID that exists for a consecutive snapshots
+	pid0 	= p_TFRun_findbr_bymerit_pickidlist(settings, tree, quantity)
+	mtype 	= 2L
+
+
 
 	;;----- FIND GAL with merit scores
 
@@ -721,6 +796,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 	larr = LONARR(20) & darr = DBLARR(20)
 		larr(0)	= N_ELEMENTS(pid0)
 		larr(2)	= settings.num_thread
+		larr(3) = mtype
 
 
 	treedir	= settings.p_tfrun_treedir
@@ -737,6 +813,8 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 		IF settings.P_TFrun_corr_timelog EQ 1L THEN TIC
 		;;----- FIND SNAPSHOT
 		snap	= snap0
+
+
 		FOR j=0L, settings_corr.nstep*(i+1L)-1L DO BEGIN
 			snap	= p_tfrun_findnextsnap(settings, snap)
 			IF snap EQ -1L THEN BREAK
@@ -775,7 +853,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 
 			;; SKIP CRITERIA
 			;;----- BY MASS?
-			IF ABS(ALOG10(quantity.mass) - ALOG10(gal(j).Mass_tot)) GT 2. THEN CONTINUE
+			;IF ABS(ALOG10(quantity.mass) - ALOG10(gal(j).Mass_tot)) GT 2. THEN CONTINUE
 
 			;;----- BY TIME * SPEED
 			;;d3d	= (gal(j).xc - quantity.pos(0))^2 + $
@@ -826,6 +904,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 		snaplist(i)	= snap
 		idlist(i)	= id_val
 
+
 		;; If this merit is high enough, end this loop
 		IF merit(i) GT settings_corr.meritU THEN BREAK
 
@@ -864,7 +943,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 		ENDIF
 	ENDIF
 
-	FOR i=0L, N_ELEMENTS(ind)-1L DO BEGIN
+	FOR i=0L, N_ELEMENTS(snap)-1L DO BEGIN
 		keyval 	= snap(i) + tree_key(0)*id(i)
 		keyval	= tree_key(keyval)
 		IF keyval LT 0L THEN BEGIN
@@ -879,7 +958,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 				PRINT, '	MERIT SCORE = ', merit(i)
 				PRINT, '%123123-----'
 
-				tree_key(keyval)	= tree_key(tree.snap(1) + tree.id(1)*tree_key(0))
+				tree_key(snap(i) + tree_key(0)*id(i))	= tree_key(tree.snap(1) + tree.id(1)*tree_key(0))
 				RETURN, -2
 			ENDIF
 			CONTINUE
@@ -1101,9 +1180,11 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			STOP
 		ENDIF
 
-;IF gal(i).ID NE 133L THEN CONTINUE ;;%456456
+;		IF i MOD 10L EQ 0L THEN SAVE, filename=settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav', $
+;			complete_tree, corr_idlist, tree_key
 
-		;IF gal(i).ID LE 232L THEN CONTINUE
+
+
 		IF bid(i) LT 0L THEN CONTINUE
 		tree	= *complete_tree(bid(i))
 		tree0	= tree
@@ -1186,14 +1267,21 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 	FOR i=0L, N_ELEMENTS(complete_tree)-1L DO BEGIN
 		tt	= *complete_tree(i)
 		IF TYPENAME(tt) EQ 'UNDEFINED' THEN CONTINUE
+		IF tt.stat EQ 'removed' THEN CONTINUE
 		keyval	= tt.snap + tree_key(0)*tt.id
 		keyind	= tree_key(keyval)
+
+		;void 	= WHERE(keyind EQ -1L, nn)
+		;IF nn GE 1L THEN tree_key(keyval(void)) = i;; why this happens
+		;keyind	= tree_key(keyval)
+
 		void	= WHERE(keyind NE i, nn)
-		IF nn GE 1L THEN BEGIN
-			PRINT, '%123123-----'
-			PRINT, '	WRONG ASSIGNMENT OF KEY'
-			STOP
-		ENDIF
+		tree_key(keyval(void)) = i
+		;IF nn GE 1L THEN BEGIN
+		;	PRINT, '%123123-----'
+		;	PRINT, '	WRONG ASSIGNMENT OF KEY'
+		;	STOP
+		;ENDIF
 	ENDFOR
 
 	SAVE, filename=settings.dir_tree + 'ctree.sav', complete_tree, corr_idlist, tree_key

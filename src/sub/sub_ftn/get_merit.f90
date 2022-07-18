@@ -75,5 +75,6 @@
       ENDDO
       !$OMP END PARALLEL DO
 
-      darr(1) = share * share / DBLE(n_raw) / DBLE(n_match) 
+      IF( larr(4) .EQ. 1 ) darr(1) = share * share / DBLE(n_raw) / DBLE(n_match) 
+      IF( larr(4) .EQ. 2 ) darr(1) = share / DBLE(n_raw)
       END SUBROUTINE
