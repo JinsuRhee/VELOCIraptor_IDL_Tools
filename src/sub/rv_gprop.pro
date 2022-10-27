@@ -2,7 +2,7 @@ FUNCTION rv_GProp, settings, dir_data, data, n_snap, run=run
 ;;-----
 ;; Check procedure set
 ;;-----
-IF run EQ 0L THEN RETURN, PTR_NEW({ABMag:-1, SFR:-1, SFR_R:-1, SFR_T:-1, MAG_R:-1},/no_copy)
+IF run EQ 0L THEN RETURN, PTR_NEW({ABMag:-1, SFR:-1, SFR_R:-1, SFR_T:-1, MAG_R:-1, isclump:-1., SFR_clumpcorr:-1., confrac:-1.},/no_copy)
 IF run EQ 1L THEN BEGIN
 	IF STRLEN(FILE_SEARCH(dir_data + 'rv_gprop.sav')) GE 5L THEN BEGIN
 		RESTORE, dir_data + 'rv_gprop.sav'

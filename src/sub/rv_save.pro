@@ -149,7 +149,10 @@ IF settings.horg EQ 'g' THEN BEGIN
 		simple_write_hdf5, settings.CONF_R, 'CONF_R', 			fid
 
 		;;-----Write clump data
-		simple_write_hdf5, (*data.rv_gprop).isclump(i), 'isclump',	fid
+		isclump	= -1L
+		IF N_ELEMENTS((*data.rv_gprop).isclump) GE 2L THEN $
+			isclump	= (*data.rv_gprop).isclump(i)
+		simple_write_hdf5, isclump, 'isclump',	fid
 ENDIF
 
 		;;----- Close the HDF5 file
