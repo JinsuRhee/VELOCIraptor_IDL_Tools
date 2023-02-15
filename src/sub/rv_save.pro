@@ -76,12 +76,12 @@ IF settings.horg EQ 'g' THEN BEGIN
 		IF N_ELEMENTS((*data.rv_gprop).SFR_clumpcorr) GE 2L THEN $
 			SFR = (*data.rv_gprop).SFR_clumpcorr(i,*)
 		simple_write_hdf5, SFR, 'G_Prop/G_SFR_clumpycorr',	fid
-
+ENDIF
 		CONFrac = -1.
 		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
 			Confrac = (*data.rv_gprop).CONFrac(i,*)
 		simple_write_hdf5, CONfrac, 'G_Prop/G_ConFrac',	fid
-ENDIF
+		simple_write_hdf5, settings.CONF_R, 'CONF_R', 			fid
 		;;----- Tree related
 		;Progs = -1L
 		;IF N_ELEMENTS((*data.rv_tree).prog_bymerit) GE 2L THEN $
@@ -129,6 +129,18 @@ ENDIF
 
 		;;----- Write Other Information
 IF settings.horg EQ 'g' THEN BEGIN
+		simple_write_hdf5, settings.flux_list, 'Flux_List', 	fid
+
+		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
+		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
+		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
+		;;-----Write clump data
+		isclump	= -1L
+		IF N_ELEMENTS((*data.rv_gprop).isclump) GE 2L THEN $
+			isclump	= (*data.rv_gprop).isclump(i)
+		simple_write_hdf5, isclump, 'isclump',	fid
+ENDIF
+
 		rate = -1.
 		IF N_ELEMENTS((*data.rv_ptmatch).rate) GE 2L THEN $
 			rate = (*data.rv_ptmatch).rate(i)
@@ -140,20 +152,6 @@ IF settings.horg EQ 'g' THEN BEGIN
 		IF N_ELEMENTS((*data.rv_ptmatch).dom_list) GE 2L THEN $
 			dom_list = (*data.rv_ptmatch).dom_list(i,*)
 		simple_write_hdf5, dom_list, 'Domain_List', fid
-
-		simple_write_hdf5, settings.flux_list, 'Flux_List', 	fid
-
-		simple_write_hdf5, (*data.rv_gprop).SFR_R, 'SFR_R',		fid
-		simple_write_hdf5, (*data.rv_gprop).SFR_T, 'SFR_T', 		fid
-		simple_write_hdf5, (*data.rv_gprop).MAG_R, 'MAG_R', 		fid
-		simple_write_hdf5, settings.CONF_R, 'CONF_R', 			fid
-
-		;;-----Write clump data
-		isclump	= -1L
-		IF N_ELEMENTS((*data.rv_gprop).isclump) GE 2L THEN $
-			isclump	= (*data.rv_gprop).isclump(i)
-		simple_write_hdf5, isclump, 'isclump',	fid
-ENDIF
 
 		;;----- Close the HDF5 file
 		h5f_close, fid
