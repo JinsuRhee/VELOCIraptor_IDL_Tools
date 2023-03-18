@@ -24,6 +24,8 @@ PRO p_mktree, settings
 			n_link	= 0L
 			tmp.numprog = 1L
 		ENDIF
+
+
 		WRITEU, 10, n_link
 
 		IF n_link GE 1L THEN BEGIN
@@ -34,19 +36,22 @@ PRO p_mktree, settings
 		ENDIF
 
 		;; Num Prog
-		WRITEU, 10, tmp.numprog-1L
-		nn += n_link*2L + 2L
-		IF tmp.numprog GE 2L THEN BEGIN
-			;; Merged ID
-			WRITEU, 10, tmp.m_id(0L:tmp.numprog-2L)
-			;; Merged Snap
-			WRITEU, 10, tmp.m_snap(0L:tmp.numprog-2L)
-			;; Merged Merit
-			WRITEU, 10, LONG(tmp.m_merit(0L:tmp.numprog-2L) * 1e10)
-			;; Merged Branch ID
-			WRITEU, 10, tmp.m_bid(0L:tmp.numprog-2L)
+		void	= WHERE(tmp.m_id GE 0L, numprog)
+		numprog += 1L
+		WRITEU, 10, numprog-1L
 
-			nn += (tmp.numprog-1L)*4L
+		nn += n_link*2L + 2L
+		IF numprog GE 2L THEN BEGIN
+			;; Merged ID
+			WRITEU, 10, tmp.m_id(0L:numprog-2L)
+			;; Merged Snap
+			WRITEU, 10, tmp.m_snap(0L:numprog-2L)
+			;; Merged Merit
+			WRITEU, 10, LONG(tmp.m_merit(0L:numprog-2L) * 1e10)
+			;; Merged Branch ID
+			WRITEU, 10, tmp.m_bid(0L:numprog-2L)
+
+			nn += (numprog-1L)*4L
 		ENDIF
 		;; Others?
 	ENDFOR

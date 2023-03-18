@@ -12,8 +12,8 @@
 ##
 ##-----
 
-num_thread	= 40L
-horg	= 'g'		;; Halo or Galaxy
+num_thread	= 20L
+horg	= 'h'		;; Halo or Galaxy
 verbose	= 1L
 
 ##-----
@@ -53,8 +53,9 @@ R_longint	= 0L
 dir_catalog     = '/storage5/FORNAX/VELOCIraptor/l10006/rerun_221011/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
-dir_tree	= '/storage7/NH2/VELOCIraptor/Galaxy/tree/l3/'
-dir_raw		= '/storage5/FORNAX/KISTI_OUTPUT/l10006/snapshots/'
+
+dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l3/'
+dir_raw		= '/storage6/NewHorizon/snapshots/'
 
 ##-----
 ## DATA Settings
@@ -203,23 +204,25 @@ clump_mfrac	= 0.5
 ##
 ##-----
 
-P_VRrun	= 1L
-P_VRrun_snap = [0158, 0173, 1L]
+P_VRrun	= 2L
+P_VRrun_snap = [0187, 0187, 1L]
 	P_VRrun_step = [1L, 1L, 1L, 1L, 1L]
 	
 P_TFrun	= 2L
 	P_TFrun_makebr	= 2L
-		P_TFrun_snap = [30L, 811L, 1L]
+		P_TFrun_snap = [20L, 187L, 1L]
 		P_TFrun_treedir	= 'des'
 		P_TFrun_meritlimit	= 0.001
 		P_TFrun_bidkey		= 10000L
-	P_TFrun_corr	= 1L
-		P_TFrun_corr_snap_f	= 811L
-		P_TFrun_corr_snap_i	= 30L
-
+	# Aborted
+	P_TFrun_corr	= 2L
+		P_TFrun_corr_nn = 017
+		P_TFrun_corr_snap_f	= 187L
+		P_TFrun_corr_snap_i	= 20L
+    
 		# BRANCH SEARCH BY COMPUTING MERIT SCORES
-		P_TFrun_corr_msearch_nsearch	= 25L
-		P_TFrun_corr_msearch_nstep		= 2L
+		P_TFrun_corr_msearch_nsearch	= 10L
+		P_TFrun_corr_msearch_nstep		= 1L
 		P_TFrun_corr_msearch_meritU		= 0.5d
 		P_TFrun_corr_msearch_meritL		= 0.05
 		P_TFrun_corr_msearch_nlast		= 50L
@@ -235,9 +238,22 @@ P_TFrun	= 2L
 		P_TFrun_corr_masslog	= 2L
 		P_TFrun_corr_timelog	= 1L
 		P_TFrun_save	= 2L
-P_TFrun_corr_nn = 065
+
+P_Ctree 	= 1L
+	P_CTree_snap	= [30L, 1026L]
+	P_CTree_rfact	= 10.d
+		# Candidate galaxies within a sphere of radius speed*rfact*time
+		# 10 seems good
+	P_CTree_merit_limit 	= 0.001d
+		# End branch if the merit is below this
+	P_CTree_n_step_N		= 10L
+		# When collecting particles on a branch, # of branch points (> 10)
+	P_CTree_n_step_DN		= 10L
+		# When collecting particles on a branch, delta Snapshot between the points (corresponding to 200 Myr seems okay)
+	P_CTree_n_search		= 20L
 
 P_MKtreedat	= 2L
+#	Convert ctree.sav to ctree.dat (for rur)
 
 P_MKcatalog	= 2L
 #	# Make Catalog based on VR + TF data
@@ -262,3 +278,4 @@ P_MKcatalog	= 2L
 ##
 P_test1	= 2L
 P_test2 = 2L 		;; test for P_TFrun_corr
+P_test3	= 2L 		;; New Ctree vs. Old one

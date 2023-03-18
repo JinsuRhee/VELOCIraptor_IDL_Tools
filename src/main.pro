@@ -27,6 +27,7 @@ Pro main, $
 	;;-----
 	IF settings.P_VRrun EQ 1L THEN P_VRrun, settings
 	IF settings.P_TFrun EQ 1L THEN P_TFrun, settings
+	IF settings.P_CTree EQ 1L THEN P_CTree, settings
 	IF settings.P_MKtreedat EQ 1L THEN P_MKtree, settings
 	IF settings.P_MKCatalog EQ 1L THEN P_MKcatalog, settings
 
@@ -35,6 +36,7 @@ Pro main, $
 	;;-----
 	IF settings.P_test1 EQ 1L THEN P_test1, settings
 	IF settings.P_test2 EQ 1L THEN P_test2, settings, modrun
+	IF settings.P_test3 EQ 1L THEN P_test3, settings
 
 	PRINT, 'Compute contamination fraction & merge stellar clump to the host galaxy'
 	STOP

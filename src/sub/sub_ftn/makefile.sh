@@ -39,3 +39,11 @@ gcc -shared -fopenmp get_contam.o get_contam_c2f.o -o get_contam.so -lgfortran
 gfortran -fopenmp -fPIC -fno-range-check -c get_merit.f90 -o get_merit.o
 gcc -fopenmp -fPIC -c get_merit_c2f.c -o get_merit_c2f.o
 gcc -shared -fopenmp get_merit.o get_merit_c2f.o -o get_merit.so -lgfortran
+
+gfortran -fopenmp -fPIC -mcmodel=large -fno-range-check -c get_merit2.f90 -o get_merit2.o
+gcc -fopenmp -fPIC -mcmodel=large -c get_merit2_c2f.c -o get_merit2_c2f.o
+gcc -shared -fopenmp get_merit2.o get_merit2_c2f.o -o get_merit2.so -lgfortran
+
+gfortran -fopenmp -fPIC -fno-range-check -c get_hash.f90 -o get_hash.o
+gcc -fopenmp -fPIC -c get_hash_c2f.c -o get_hash_c2f.o
+gcc -shared -fopenmp get_hash.o get_hash_c2f.o -o get_hash.so -lgfortran
