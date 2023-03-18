@@ -1484,7 +1484,7 @@ PRO p_tfrun_makebr_cname, settings
         FOR i=0L, N_ELEMENTS(tfile)-1L DO BEGIN
                 str     = tfile(i)
                 str     = STRSPLIT(str, '_' ,/extract)
-                str     = str(1)
+                str     = str(-1)
                 str     = STRSPLIT(str, '.', /extract)
                 str     = str(0)
                 tnumber(i)      = LONG(str)
