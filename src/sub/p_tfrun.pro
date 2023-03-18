@@ -1157,17 +1157,21 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 
 	snap0	= settings.p_TFRun_corr_snap_f
 
+
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
 	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
 		horg=settings.horg)
+
 	;gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, tree_key, gal, snap0)
+
 	corr_idlist	= LONARR(N_ELEMENTS(gal))-1L
 
 	;;----- CONNECT
 	
 	FOR i=0L, N_ELEMENTS(gal)-1L DO BEGIN
+
 		IF i LT settings.p_TFrun_corr_nn * 10L THEN BEGIN
 			CONTINUE
 		ENDIF ELSE IF i EQ settings.p_TFrun_corr_nn * 10L THEN BEGIN
@@ -1180,8 +1184,8 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			STOP
 		ENDIF
 
-;		IF i MOD 10L EQ 0L THEN SAVE, filename=settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav', $
-;			complete_tree, corr_idlist, tree_key
+		IF i MOD 10L EQ 0L THEN SAVE, filename=settings.dir_tree + 'ctree_' + STRING(i,format='(I4.4)') + '.sav', $
+			complete_tree, corr_idlist, tree_key
 
 
 
@@ -1256,6 +1260,7 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 			;	ENDFOR
 			;ENDIF
 			;cgPS_close
+
 		complete_tree(bid(i))	= PTR_NEW(tree, /no_copy)
 		corr_idlist(i)	= gal(i).ID
 		;STOP	;456456
@@ -1677,12 +1682,16 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 ENDIF
 
 IF settings.p_tfrun_corr EQ 1L THEN BEGIN
-	RESTORE, settings.dir_tree + 'tree.sav'
-
-	p_TFRun_corr, settings, complete_tree, tree_key
-
+	;RESTORE, settings.dir_tree + 'tree.sav'
+	;p_TFRun_corr, settings, complete_tree, tree_key
+	;123123
+	;p_mtree, settings
 	;PRINT, 'Mergered branch mutual link'
 	;PRINT, 'finish branch modulate m_ID'
+
+	PRINT, '%123123'
+	PRINT, '	This routine is aborted and moved to p_mtree'
+	PRITN, '%123123'
 ENDIF
 
 IF settings.p_tfrun_save EQ 1L THEN BEGIN
