@@ -31,7 +31,7 @@ verbose	= 1L
 ##-----
 
 effective_resolution	= 4096	;; 2048 for FN
-R_orgver	= 0L
+R_orgver	= 1L
 R_longint	= 0L
 
 ##-----
@@ -50,9 +50,10 @@ R_longint	= 0L
 ##
 ##-----
 
-dir_catalog     = '/storage5/NewHorizon/VELOCIraptor/'
+dir_catalog     = '/storage5/FORNAX/VELOCIraptor/l10006/rerun_221011/'
 	dir_catalog_pre = 'snap_'
 	dir_catalog_suf = ''
+
 dir_tree	= '/storage5/NewHorizon/VELOCIraptor/Halo/tree/l3/'
 dir_raw		= '/storage6/NewHorizon/snapshots/'
 
@@ -218,7 +219,7 @@ P_TFrun	= 2L
 		P_TFrun_corr_nn = 017
 		P_TFrun_corr_snap_f	= 187L
 		P_TFrun_corr_snap_i	= 20L
-
+    
 		# BRANCH SEARCH BY COMPUTING MERIT SCORES
 		P_TFrun_corr_msearch_nsearch	= 10L
 		P_TFrun_corr_msearch_nstep		= 1L
