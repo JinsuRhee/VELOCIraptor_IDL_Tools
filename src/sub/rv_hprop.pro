@@ -27,17 +27,18 @@ IF run EQ 2L THEN BEGIN
 	;;-----
 	;; Allocate Memory
 	;;-----
-	confrac		= DBLARR(n_gal, N_ELEMENTS(settings.CONF_r)) - 1.0d8
+	;confrac		= DBLARR(n_gal, N_ELEMENTS(settings.CONF_r)) - 1.0d8
 
 	PRINT, '        %%%%% HProp - MEMORY ALLOCATED'
 
 	;;-----
 	;; Contamination Fraction
 	;;-----
-	confrac	= get_cfrac(settings, rawdata, confrac, n_snap, horg=settings.horg)
+	confrac	= get_cfrac(settings, rawdata, n_snap, horg=settings.horg)
 
-	output	= CREATE_STRUCT('CONFRAC', confrac)
-	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
+	output	= CREATE_STRUCT('CONFRAC_M', confrac.m)
+	output	= CREATE_STRUCT(output, 'CONFRAC_N', confrac.n)
+	PRINT, '        %%%%% HProp - Contamination fractions are calculated'
 
 	SAVE, filename=dir_data + 'rv_hprop.sav', output
 	RETURN, PTR_NEW(output,/no_copy)

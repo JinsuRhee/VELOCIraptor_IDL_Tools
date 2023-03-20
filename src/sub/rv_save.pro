@@ -100,9 +100,14 @@ IF run EQ 0L THEN RETURN
 		simple_write_hdf5, SFR, gpstr + '/G_SFR_clumpycorr',	fid
 
 		CONFrac = -1.
-		IF N_ELEMENTS((*data.rv_gprop).confrac) GE 2L THEN $
-			Confrac = (*data.rv_gprop).CONFrac(i,*)
-		simple_write_hdf5, CONfrac, gpstr + '/G_ConFrac',	fid
+		IF N_ELEMENTS((*data.rv_gprop).confrac_m) GE 2L THEN $
+			Confrac = (*data.rv_gprop).CONFrac_m(i,*)
+		simple_write_hdf5, CONfrac, gpstr + '/G_ConFrac_M',	fid
+
+		CONFrac = -1.
+		IF N_ELEMENTS((*data.rv_gprop).confrac_n) GE 2L THEN $
+			Confrac = (*data.rv_gprop).CONFrac_n(i,*)
+		simple_write_hdf5, CONfrac, gpstr + '/G_ConFrac_n',	fid
 
 		;;----- Particle ID
 		simple_write_hdf5, ptcl_id,	ppstr + '/P_ID',		fid

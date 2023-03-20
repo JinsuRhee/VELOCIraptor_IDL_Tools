@@ -15,8 +15,8 @@ void get_contam(int argc, void *argv[])
   double *xc, *yc, *zc, *rr;
   int *larr;
   double *darr;
-  int *dom_list;
-  double *confrac, *conf_r;
+  double *dm_xp, *dm_mm;
+  double *conf_n, *conf_m, *conf_r;
 
   STRING *dir_raw;
 
@@ -27,9 +27,11 @@ void get_contam(int argc, void *argv[])
   yc		= (double *) argv[4];
   zc		= (double *) argv[5];
   rr		= (double *) argv[6];
-  dom_list	= (int *) argv[7];
-  confrac	= (double *) argv[8];
-  conf_r	= (double *) argv[9];
+  dm_xp		= (double *) argv[7];
+  dm_mm		= (double *) argv[8];
+  conf_n	= (double *) argv[9];
+  conf_m	= (double *) argv[10];
+  conf_r	= (double *) argv[11];
 
 
-  get_contam_(larr, darr, dir_raw->s, xc, yc, zc, rr, dom_list, confrac, conf_r);   /* Compute sum */}
+  get_contam_(larr, darr, dir_raw->s, xc, yc, zc, rr, dm_xp, dm_mm, conf_n, conf_m, conf_r);   /* Compute sum */}
