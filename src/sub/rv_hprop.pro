@@ -39,7 +39,7 @@ IF run EQ 2L THEN BEGIN
 	output	= CREATE_STRUCT('CONFRAC', confrac)
 	PRINT, '        %%%%% GProp - Contamination fractions are calculated'
 
-	SAVE, filename=dir_data + 'rv_gprop.sav', output
+	SAVE, filename=dir_data + 'rv_hprop.sav', output
 	RETURN, PTR_NEW(output,/no_copy)
 ENDIF
 END
