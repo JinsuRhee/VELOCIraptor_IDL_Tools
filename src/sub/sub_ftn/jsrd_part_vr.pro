@@ -20,7 +20,7 @@ PRO jsrd_part_vr, part, dir2=dir2, snapnum=snapnum, swap=swap, icpu=icpu, ncpu=n
 	ENDIF
 
 	IF ~KEYWORD_SET(num_thread) THEN num_thread = 1L
-	FINDPRO, 'jsrd_part', dirlist=curr_dir, /noprint
+	FINDPRO, 'jsrd_part_vr', dirlist=curr_dir, /noprint
 	curr_dir	= curr_dir(0)
 
 	IF ~KEYWORD_SET(snapnum) THEN BEGIN
@@ -61,7 +61,7 @@ PRO jsrd_part_vr, part, dir2=dir2, snapnum=snapnum, swap=swap, icpu=icpu, ncpu=n
 	;;-----
 	npart_tot	= 0L
 	part_ind	= LONARR(ncpu)
-		ftr_name	= curr_dir + '/fortran/jsrd_part_totnum.so'
+		ftr_name	= curr_dir + '/jsrd_part_totnum.so'
 			larr = LONARR(20) & darr = DBLARR(20)
 			larr(0) = ncpu
 			larr(2)	= num_thread
@@ -80,7 +80,7 @@ PRO jsrd_part_vr, part, dir2=dir2, snapnum=snapnum, swap=swap, icpu=icpu, ncpu=n
 	;;-----
 	;; READ PTCLS
 	;;-----
-		ftr_name	= curr_dir + '/fortran/jsrd_part.so'
+		ftr_name	= curr_dir + '/jsrd_part.so'
 			larr = lonarr(20) & darr = dblarr(20)
 			larr(0) = ncpu
 			;larr(1)	= icpu + ncpu - 1L
