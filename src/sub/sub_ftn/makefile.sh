@@ -47,3 +47,12 @@ gcc -shared -fopenmp get_merit2.o get_merit2_c2f.o -o get_merit2.so -lgfortran
 gfortran -fopenmp -fPIC -fno-range-check -c get_hash.f90 -o get_hash.o
 gcc -fopenmp -fPIC -c get_hash_c2f.c -o get_hash_c2f.o
 gcc -shared -fopenmp get_hash.o get_hash_c2f.o -o get_hash.so -lgfortran
+
+gfortran -fopenmp -fPIC -c jsrd_part_totnum.f90 -o jsrd_part_totnum.o
+gcc -fopenmp -fPIC -c jsrd_part_totnum_c2f.c -o jsrd_part_totnum_c2f.o
+gcc -shared -fopenmp jsrd_part_totnum.o jsrd_part_totnum_c2f.o -o jsrd_part_totnum.so -lgfortran
+
+gfortran -fopenmp -fPIC -c jsrd_part.f90 -o jsrd_part.o
+gcc -fopenmp -fPIC -c jsrd_part_c2f.c -o jsrd_part_c2f.o
+gcc -shared -fopenmp jsrd_part.o jsrd_part_c2f.o -o jsrd_part.so -lgfortran
+
