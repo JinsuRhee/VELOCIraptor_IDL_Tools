@@ -70,6 +70,7 @@ FUNCTION get_cfrac, settings, rawdata, n_snap, horg=horg
 	TIC
 	dmp_mass	= 1./(4096.)^3 * (siminfo.omega_M - siminfo.omega_B) / siminfo.omega_M
 
+	
 	ftr_name	= settings.dir_lib + 'sub_ftn/get_contam.so'
 		larr = LONARR(20) & darr = DBLARR(20)
 		larr(0)	= n_gal

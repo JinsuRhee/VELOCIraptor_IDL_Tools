@@ -48,6 +48,7 @@ IF run EQ 0L THEN RETURN
 	simple_write_hdf5, (*data.rv_raw).id, 'ID', fid
 
 	for i=0L, ngal - 1L do begin
+
 		ib = -1L & iu = -1L & ptcl_id = -1L
 		IF N_ELEMENTS((*data.rv_id).b_ind) GE 2 THEN BEGIN
 			ib = (*data.rv_id).b_ind(i,*) & iu = (*data.rv_id).u_ind(i,*)
@@ -108,6 +109,7 @@ IF run EQ 0L THEN RETURN
 		IF N_ELEMENTS((*data.rv_gprop).confrac_n) GE 2L THEN $
 			Confrac = (*data.rv_gprop).CONFrac_n(i,*)
 		simple_write_hdf5, CONfrac, gpstr + '/G_ConFrac_n',	fid
+		
 
 		;;----- Particle ID
 		simple_write_hdf5, ptcl_id,	ppstr + '/P_ID',		fid
