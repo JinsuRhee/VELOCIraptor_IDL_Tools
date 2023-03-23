@@ -74,14 +74,14 @@
        ENDDO 
        part%mm = mp(:)
 
-       time(1) = omp_get_wtime()
+       !time(1) = omp_get_wtime()
        IF(ALLOCATED(root)) DEALLOCATE(root)
 
-       root = js_kdtree_mktree(part, orgind, 32, 0, 0, 3, n_thread)
+       root = js_kdtree_mktree(part, orgind, 128, 0, 0, 3, n_thread)
 
-       time(2) = omp_get_wtime()
-       PRINT *, time(2) - time(1), size(root), larr(3)
-       PRINT *, ' '
+       !time(2) = omp_get_wtime()
+       !PRINT *, time(2) - time(1), size(root), larr(3)
+       !PRINT *, ' '
 
        !!-----
        !! MAIN LOOP

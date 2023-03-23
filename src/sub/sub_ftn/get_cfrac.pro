@@ -89,7 +89,7 @@ FUNCTION get_cfrac, settings, rawdata, n_snap, horg=horg
 
 
 	TOC, /verbose
-STOP
+
 	confrac	= {N:conf_n, M:conf_m}
 	RETURN, confrac
 
