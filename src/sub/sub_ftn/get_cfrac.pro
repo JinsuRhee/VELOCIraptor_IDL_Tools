@@ -70,14 +70,13 @@ FUNCTION get_cfrac, settings, rawdata, n_snap, horg=horg
 	TIC
 	dmp_mass	= 1./(4096.)^3 * (siminfo.omega_M - siminfo.omega_B) / siminfo.omega_M
 
-	
 	ftr_name	= settings.dir_lib + 'sub_ftn/get_contam.so'
 		larr = LONARR(20) & darr = DBLARR(20)
 		larr(0)	= n_gal
 		larr(1)	= nn_dm
 		larr(2)	= n_aper
 		larr(3)	= settings.num_thread
-		larr(10)= n_snap
+		;larr(10)= n_snap
 		larr(11)= STRLEN(settings.dir_raw)
 
 		;IF settings.R_orgver EQ 1L THEN larr(18) = 100L
@@ -88,7 +87,9 @@ FUNCTION get_cfrac, settings, rawdata, n_snap, horg=horg
 		larr, darr, settings.dir_raw, $
 		xc, yc, zc, rr, dm_xp, dm_mm, conf_n, conf_m, DOUBLE(settings.CONF_R))
 
+
 	TOC, /verbose
+STOP
 	confrac	= {N:conf_n, M:conf_m}
 	RETURN, confrac
 

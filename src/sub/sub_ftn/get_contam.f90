@@ -3,6 +3,7 @@
                        xp, mp, conf_n, conf_m, conf_r)
 
        USE omp_lib
+       USE js_kdtree
 
 !!-----
 !! GLOBAL VARIABLES
@@ -25,14 +26,24 @@
 !! LOCAL VARIABLES
 !!-----
 
-       INTEGER(KIND=4) i, j, k, l, m
+       INTEGER(KIND=4) i, j, k, l, m, nid
        INTEGER(KIND=4) n_gal, n_dm, n_aper, n_thread, n_snap
-       REAL(KIND=8) dmp_mass, D2
-       REAL(KIND=8) c_nall(larr(3)), c_n(larr(3))
-       REAL(KIND=8) c_mall(larr(3)), c_m(larr(3))
+       REAL(KIND=8) dmp_mass, D2, time(2), pos(3)
        REAL(KIND=8), DIMENSION(:,:), ALLOCATABLE :: tmp_dbl
        CHARACTER(LEN=100) domnum, fdum, snum, fname
        INTEGER(KIND=4) rd_dlist(larr(2))
+
+       INTEGER(KIND=4), DIMENSION(:), ALLOCATABLE :: orgind
+       !INTEGER(KIND=4), DIMENSION(:), ALLOCATABLE :: recind
+       TYPE(nodetype), DIMENSION(:), ALLOCATABLE :: root
+       TYPE(dat), DIMENSION(:), ALLOCATABLE :: part
+       !INTEGER(KIND=4) n_leaf
+
+       TYPE conf_data
+         REAL(KIND=8) c_nall, c_n
+         REAL(KIND=8) c_mall, c_m
+       END TYPE conf_data
+       TYPE(conf_data) cdata(larr(3))
 
        n_gal    = larr(1)
        n_dm    = larr(2)
@@ -45,51 +56,161 @@
        CALL OMP_SET_NUM_THREADS(n_thread)
 
        !!-----
+       !! GET TREE
+       !!-----
+       IF(ALLOCATED(orgind)) DEALLOCATE(orgind)
+       ALLOCATE(orgind(1:n_dm))
+
+       !$OMP PARALLEL DO schedule(static) default(shared)
+       DO i=1, n_dm
+         orgind(i) = i
+       ENDDO
+       !$OMP END PARALLEL DO
+
+       IF(ALLOCATED(part)) DEALLOCATE(part)
+       ALLOCATE(part(1:n_dm))
+       DO i=1, 3
+          part%pos(i) = xp(:,i)
+       ENDDO 
+       part%mm = mp(:)
+
+       time(1) = omp_get_wtime()
+       IF(ALLOCATED(root)) DEALLOCATE(root)
+
+       root = js_kdtree_mktree(part, orgind, 32, 0, 0, 3, n_thread)
+
+       time(2) = omp_get_wtime()
+       PRINT *, time(2) - time(1), size(root), larr(3)
+       PRINT *, ' '
+
+       !!-----
        !! MAIN LOOP
        !!-----
+       !$OMP PARALLEL DO default(shared) &
+       !$OMP & private(cdata, nid, l)
        DO i=1, n_gal
+         !! Initialize
+         DO l=1, n_aper
+           cdata(l)%c_nall = 0.
+           cdata(l)%c_mall = 0.
+           cdata(l)%c_n = 0.
+           cdata(l)%c_m = 0.
+         ENDDO
+         nid = 1
 
-             c_nall = 0.
-             c_mall = 0.
-             c_n = 0.
-             c_m = 0.
-             !! LOOP FOR PARTICLE
-             !$OMP PARALLEL DO default(shared) &
-             !$OMP & schedule(static) private(D2, l) &
-             !$OMP & reduction(+:c_nall, c_mall) &
-             !$OMP & reduction(+:c_n, c_m)
-             DO k=1, n_dm
-               D2 = (xp(k,1) - xc(i))**2 + &
-                       (xp(k,2) - yc(i))**2 + &
-                       (xp(k,3) - zc(i))**2
-               D2 = SQRT(D2) / rr(i)
-               DO l=1, n_aper
-                 IF(D2 .GT. conf_r(l)) CYCLE
-                 c_nall(l) = c_nall(l) + 1
-                 c_mall(l) = c_mall(l) + mp(k)
+         !! Walk Tree
+         CALL get_contam_walktree(xc(i), yc(i), zc(i), rr(i), part, root, nid, conf_r, cdata, n_aper, dmp_mass)
+         DO l=1, n_aper
+           IF(cdata(l)%c_nall .EQ.0) THEN
+             conf_n(i,l) = 0.
+           ELSE
+             conf_n(i,l) = cdata(l)%c_n / cdata(l)%c_nall
+           ENDIF
 
-                 IF(mp(k) .GT. 1.1*dmp_mass) THEN
-                   c_n(l) = c_n(l) + 1
-                   c_m(l) = c_m(l) + mp(k)
-                 ENDIF
-               ENDDO
-             ENDDO
-             !$OMP END PARALLEL DO
+           IF(cdata(l)%c_mall .EQ.0) THEN
+             conf_m(i,l) = 0.
+           ELSE
+             conf_m(i,l) = cdata(l)%c_m / cdata(l)%c_mall
+           ENDIF
+         ENDDO
 
-             DO l=1, n_aper
-               IF(c_nall(l) .EQ. 0) THEN
-                 conf_n(i,l) = 0.
-               ELSE
-                 conf_n(i,l) = c_n(l) / c_nall(l)
-               ENDIF
-
-               IF(c_mall(l) .EQ. 0) THEN
-                 conf_m(i,l) = 0.
-               ELSE
-                 conf_m(i,l) = c_m(l) / c_mall(l)
-               ENDIF
-             ENDDO
        ENDDO
+       !$OMP END PARALLEL DO
+
+       DEALLOCATE(orgind, root, part)
        RETURN
-       END SUBROUTINE
+
+CONTAINS
+       !! WALK TREE
+       RECURSIVE SUBROUTINE get_contam_walktree(x0, y0, z0, r0, part, root, nid, conf_r, cdata, n_aper, dmp_mass)
+       IMPLICIT NONE
+       REAL(KIND=8) x0, y0, z0, r0, box(8,3), gpos(3), ppos(3)
+       !REAL(KIND=8), DIMENSION(:, :), INTENT(IN) :: xp
+       !REAL(KIND=8), DIMENSION(:), INTENT(IN) :: mp
+       TYPE(dat), DIMENSION(:), INTENT(IN) :: part
+       REAL(KIND=8) dmp_mass
+       TYPE(nodetype), DIMENSION(:), INTENT(IN) :: root
+       TYPE(nodetype) node
+       REAL(KIND=8), DIMENSION(:), INTENT(IN) :: conf_r
+       TYPE(conf_data) cdata(n_aper)
+
+       INTEGER(KIND=4) n_aper, i, j, k, l, m, nid
+       REAL(KIND=8) max_rr, d2, gd2
+
+       !! Initialize
+       max_rr = conf_r(n_aper) * r0
+       gpos(1) = x0; gpos(2) = y0; gpos(3) = z0
+       node = root(nid)
+       IF(js_kdtree_nodeskip(node, gpos, max_rr, 3)) RETURN
+       IF(node%leaf .GT. 0) THEN
+
+         !IF(js_kdtree_nodeskip(node, gpos, max_rr, 3)) RETURN
+
+         DO i=node%bstart, node%bend
+           ppos(1) = part(i)%pos(1); ppos(2) = part(i)%pos(2); ppos(3) = part(i)%pos(3)
+           gd2 = js_d3d(gpos, ppos) / r0
+           DO j=1, n_aper
+             IF(gd2 .GT. conf_r(j)) CYCLE
+             cdata(j)%c_nall = cdata(j)%c_nall + 1.
+             cdata(j)%c_mall = cdata(j)%c_mall + part(i)%mm
+             IF(part(i)%mm .GT. 1.1*dmp_mass) THEN
+               cdata(j)%c_n = cdata(j)%c_n + 1.
+               cdata(j)%c_m = cdata(j)%c_m + part(i)%mm
+             ENDIF
+           ENDDO
+         ENDDO
+         RETURN
+       ELSE
+
+         nid = node%left
+         CALL get_contam_walktree(x0, y0, z0, r0, part, root, nid, conf_r, cdata, n_aper, dmp_mass)
+
+         nid = node%right
+         CALL get_contam_walktree(x0, y0, z0, r0, part, root, nid, conf_r, cdata, n_aper, dmp_mass)
+       ENDIF
+
+
+       RETURN
+
+       END SUBROUTINE get_contam_walktree
+
+       FUNCTION js_d3d(x, y) RESULT(d)
+       IMPLICIT NONE
+       REAL(KIND=8) x(3), y(3), d
+       d = (x(1) - y(1))**2 + (x(2) - y(2))**2 + (x(3) - y(3))**2
+       d = SQRT(d)
+       RETURN
+       END FUNCTION js_d3d
+
+       FUNCTION get_contam_inbox(bnd, gpos, max_r) RESULT(ok)
+       IMPLICIT NONE
+       REAL(KIND=8) bnd(6,2), gpos(3), max_r
+       REAL(KIND=8) box(8,3), d2
+       LOGICAL ok
+       INTEGER(KIND=4) i
+       ok = .False.
+       IF(gpos(1) .GE. bnd(1,1) .AND. gpos(1) .LT. bnd(1,2) &
+           .AND. gpos(2) .GE. bnd(2,1) .AND. gpos(2) .LT. bnd(2,2) &
+           .AND. gpos(3) .GE. bnd(3,1) .AND. gpos(3) .LT. bnd(3,2)) THEN
+         ok = .True.
+       ELSE
+         box(1,1) = bnd(1,1); box(1,2) = bnd(2,1); box(1,3) = bnd(3,1)
+         box(2,1) = bnd(1,1); box(2,2) = bnd(2,2); box(2,3) = bnd(3,1)
+         box(3,1) = bnd(1,2); box(3,2) = bnd(2,1); box(3,3) = bnd(3,1)
+         box(4,1) = bnd(1,2); box(4,2) = bnd(2,2); box(4,3) = bnd(3,1)
+  
+         box(5,1) = bnd(1,1); box(5,2) = bnd(2,1); box(5,3) = bnd(3,2)
+         box(6,1) = bnd(1,1); box(6,2) = bnd(2,2); box(6,3) = bnd(3,2)
+         box(7,1) = bnd(1,2); box(7,2) = bnd(2,1); box(7,3) = bnd(3,2)
+         box(8,1) = bnd(1,2); box(8,2) = bnd(2,2); box(8,3) = bnd(3,2)
+         d2 = js_d3d(box(1,:), gpos)
+         DO i=2, 8
+           d2 = MIN(d2, js_d3d(box(i,:), gpos))
+         ENDDO
+         IF(d2 .LT. max_r) ok = .True.
+       ENDIF
+       RETURN
+       END FUNCTION get_contam_inbox
+
+       END SUBROUTINE get_contam
 
