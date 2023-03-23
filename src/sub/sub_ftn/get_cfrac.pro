@@ -50,7 +50,7 @@ FUNCTION get_cfrac, settings, rawdata, n_snap, horg=horg
 	;;-----
 	;; READ PTCL
 	;;-----
-	str	 = 'jsrd_part, part, dir="' + settings.dir_raw + '"' + $
+	str	 = 'jsrd_part_vr, part, dir="' + settings.dir_raw + '"' + $
 		', snapnum=' + STRTRIM(n_snap,2) + ', num_thread=' + $
 		STRTRIM(settings.num_thread,2) + ' , domlist=dlist, /silent'
 	IF settings.R_orgver GE 1L THEN str +=', /newver'
