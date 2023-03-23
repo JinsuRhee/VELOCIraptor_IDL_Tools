@@ -1,4 +1,4 @@
-PRO P_VRrun, settings
+PRO P_VRrun, settings, fr=fr
 
 	N1	= Settings.P_VRrun_snap(0)
 	N2	= Settings.P_VRrun_snap(1)
@@ -21,7 +21,7 @@ PRO P_VRrun, settings
 
 		file	= dir + '/PP_RUNNING'
 		isfile	= STRLEN(FILE_SEARCH(file))
-		IF isfile GE 4L THEN CONTINUE
+		IF ~KEYWORD_SET(fr) AND isfile GE 4L THEN CONTINUE
 
 		SPAWN, 'mkdir ' + dir + '/PP_RUNNING'
 		read_vraptor, settings, i
