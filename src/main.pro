@@ -1,5 +1,5 @@
 Pro main, $
-	modrun
+	modrun, fr=fr
 
 	IF ~KEYWORD_SET(modrun) THEN modrun = -1L
 	
@@ -25,7 +25,7 @@ Pro main, $
 	;;-----
 	;; Main Procedures
 	;;-----
-	IF settings.P_VRrun EQ 1L THEN P_VRrun, settings
+	IF settings.P_VRrun EQ 1L THEN P_VRrun, settings, fr=fr
 	IF settings.P_TFrun EQ 1L THEN P_TFrun, settings
 	IF settings.P_CTree EQ 1L THEN P_CTree, settings
 	IF settings.P_MKtreedat EQ 1L THEN P_MKtree, settings
