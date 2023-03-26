@@ -925,7 +925,9 @@ END
 PRO p_ctree_link, tree_set, data, number, c_snap, complete_tree, tree_key
 
 	number	= {n_link:0L, n_broken:0L}
-	cut	= WHERE(data.stat EQ 'C' AND data.list_n EQ tree_set.n_search, ncut)
+
+	snap_int_cut 	= MIN([c_snap - tree_set.snap_i, tree_set.n_search])
+	cut	= WHERE(data.stat EQ 'C' AND data.list_n GE snap_int_cut, ncut)
 	IF ncut EQ 0L THEN RETURN
 
 	FOR i=0L, ncut-1L DO BEGIN
@@ -1063,8 +1065,8 @@ PRO p_ctree, settings
 	n_tree 	= N_ELEMENTS(tree_set.slist)
 	FOR i=n_tree-1L, 0L, -1L DO BEGIN
 
-;IF tree_set.slist(i) GE 958L THEN CONTINUE
-;IF tree_set.slist(i) EQ 957L THEN RESTORE, '/storage6/jinsu/treetest/tcheck3_0958.sav'
+;IF tree_set.slist(i) GE 30L THEN CONTINUE
+;IF tree_set.slist(i) EQ 29L THEN RESTORE, settings.dir_tree + 'ctree_0030.sav'
 
 		c_snap 	= tree_set.slist(i)
 		PRINT, '%123123-----'
@@ -1132,10 +1134,9 @@ PRO p_ctree, settings
 		PRINT, '			Read Snap ptcls   :', t_rsnap
 		PRINT, '			Compute Merits    :', t_merit
 		PRINT, '			Link Branch	  :', t_link
-		IF c_snap MOD 50L EQ 0L THEN BEGIN
+		IF c_snap MOD 5L EQ 0L THEN BEGIN
 			SAVE, FILENAME=settings.dir_tree + '/ctree_' + STRING(c_snap,format='(I4.4)') + '.sav', tree_set, data, c_snap, complete_tree, tree_key
 		ENDIF
-
 		IF c_snap LE tree_set.snap_i THEN BEGIN
 			p_ctree_classify, tree_set, data, c_snap, number
 			p_ctree_detend, tree_set, data, complete_tree, tree_key

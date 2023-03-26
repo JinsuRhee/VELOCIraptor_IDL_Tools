@@ -1646,7 +1646,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;	ENDFOR
 		;ENDIF
 
-		PRINT, i, ' / ', treeset.N1
+		PRINT, i, ' / ', treeset.N1, ' Using n_step = ', t_curr.nlink
 		PRINT, '	ALL : ' +  STRTRIM(treelog.n_all,2) + $
 			' / NEW :' + STRTRIM(treelog.n_new,2) +  $
 			' / LINK : ' + STRTRIM(treelog.n_link,2) + $
