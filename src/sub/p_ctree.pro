@@ -926,7 +926,9 @@ PRO p_ctree_link, tree_set, data, number, c_snap, complete_tree, tree_key
 
 	number	= {n_link:0L, n_broken:0L}
 
-	snap_int_cut 	= MIN([c_snap - tree_set.snap_i, tree_set.n_search])
+	ind1	= (WHERE(tree_set.slist EQ c_snap))[0]
+	ind0	= (WHERE(tree_set.slist EQ tree_set.snap_i))[0]
+	snap_int_cut 	= MIN([ind1-ind0-1L, tree_set.n_search])
 	cut	= WHERE(data.stat EQ 'C' AND data.list_n GE snap_int_cut, ncut)
 	IF ncut EQ 0L THEN RETURN
 
@@ -1065,8 +1067,8 @@ PRO p_ctree, settings
 	n_tree 	= N_ELEMENTS(tree_set.slist)
 	FOR i=n_tree-1L, 0L, -1L DO BEGIN
 
-;IF tree_set.slist(i) GE 30L THEN CONTINUE
-;IF tree_set.slist(i) EQ 29L THEN RESTORE, settings.dir_tree + 'ctree_0030.sav'
+IF tree_set.slist(i) GE 35L THEN CONTINUE
+IF tree_set.slist(i) EQ 24L THEN RESTORE, settings.dir_tree + 'ctree_0035.sav'
 
 		c_snap 	= tree_set.slist(i)
 		PRINT, '%123123-----'
