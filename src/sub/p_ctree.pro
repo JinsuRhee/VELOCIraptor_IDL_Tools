@@ -550,8 +550,6 @@ PRO p_ctree_classify, tree_set, data, snap0, number
 		ENDIF ELSE BEGIN
 			ind1 	= ind0 + tree_set.n_search*2L
 		ENDELSE
-		
-
 
 		IF ind - ind0 LE tree_set.n_search OR ind1 - ind0 LT tree_set.n_search THEN BEGIN
 			data(i).stat 	= 'C'
@@ -929,7 +927,7 @@ PRO p_ctree_link, tree_set, data, number, c_snap, complete_tree, tree_key
 	ind1	= (WHERE(tree_set.slist EQ c_snap))[0]
 	ind0	= (WHERE(tree_set.slist EQ tree_set.snap_i))[0]
 	snap_int_cut 	= MIN([ind1-ind0-1L, tree_set.n_search])
-	cut	= WHERE(data.stat EQ 'C' AND data.list_n GE snap_int_cut, ncut)
+	cut	= WHERE(data.stat EQ 'C' AND data.list_n GE snap_int_cut AND data.list_n GT 0L, ncut)
 	IF ncut EQ 0L THEN RETURN
 
 	FOR i=0L, ncut-1L DO BEGIN
@@ -1067,8 +1065,8 @@ PRO p_ctree, settings
 	n_tree 	= N_ELEMENTS(tree_set.slist)
 	FOR i=n_tree-1L, 0L, -1L DO BEGIN
 
-IF tree_set.slist(i) GE 35L THEN CONTINUE
-IF tree_set.slist(i) EQ 24L THEN RESTORE, settings.dir_tree + 'ctree_0035.sav'
+IF tree_set.slist(i) GE 15L THEN CONTINUE
+IF tree_set.slist(i) EQ 14L THEN RESTORE, settings.dir_tree + 'ctree_0015.sav'
 
 		c_snap 	= tree_set.slist(i)
 		PRINT, '%123123-----'
@@ -1136,12 +1134,20 @@ IF tree_set.slist(i) EQ 24L THEN RESTORE, settings.dir_tree + 'ctree_0035.sav'
 		PRINT, '			Read Snap ptcls   :', t_rsnap
 		PRINT, '			Compute Merits    :', t_merit
 		PRINT, '			Link Branch	  :', t_link
-		IF c_snap MOD 5L EQ 0L THEN BEGIN
+		;IF c_snap MOD 5L EQ 0L THEN BEGIN
 			SAVE, FILENAME=settings.dir_tree + '/ctree_' + STRING(c_snap,format='(I4.4)') + '.sav', tree_set, data, c_snap, complete_tree, tree_key
-		ENDIF
+		;ENDIF
 		IF c_snap LE tree_set.snap_i THEN BEGIN
 			p_ctree_classify, tree_set, data, c_snap, number
 			p_ctree_detend, tree_set, data, complete_tree, tree_key
+			REPEAT BEGIN
+				p_ctree_link, tree_set, data, number, c_snap, complete_tree, tree_key
+				p_ctree_classify, tree_set, data, c_snap, number
+				p_ctree_detend, tree_set, data, complete_tree, tree_key
+
+			ENDREP UNTIL MAX(data.list_n) EQ 0L
+			;p_ctree_classify, tree_set, data, c_snap, number
+			;p_ctree_detend, tree_set, data, complete_tree, tree_key
 			BREAK
 		ENDIF
 	ENDFOR
