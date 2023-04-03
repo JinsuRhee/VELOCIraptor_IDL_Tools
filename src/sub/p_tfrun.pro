@@ -444,7 +444,7 @@ FUNCTION p_tfrun_corr_findgal, settings, gal0, snap0, pid, snap, NSNAP=NSNAP
 	ENDFOR
 	settings.p_tfrun_treedir	= treedir
 
-	gal	= f_rdgal2(snap, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+	gal	= f_rdgal(snap, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
 		horg=settings.horg)
 
 	;;----- READ INFO
@@ -508,7 +508,7 @@ FUNCTION p_TFRun_corr_findbr_byidmbp, settings, tree, complete_tree
 
 	id0	= tree.id(0)
 	snap0	= tree.snap(0)
-	gal0	= f_rdgal2(snap0, id0, column_list=settings.column_list, dir=settings.dir_catalog, $
+	gal0	= f_rdgal(snap0, id0, column_list=settings.column_list, dir=settings.dir_catalog, $
 		horg=settings.horg)
 
 	;;-----
@@ -718,7 +718,7 @@ FUNCTION p_TFRun_findbr_bymerit_pickidlist, settings, tree, quantity
 	i1 		= 0L
 	npart 	= 0L
 	REPEAT BEGIN
-		dum 	= f_rdgal2(tree.snap(i0), tree.id(i0), horg=settings.horg, column_list=settings.column_list, dir=settings.dir_catalog)
+		dum 	= f_rdgal(tree.snap(i0), tree.id(i0), horg=settings.horg, column_list=settings.column_list, dir=settings.dir_catalog)
 		npart_list(i1) 	= dum.npart
 		ind_list(i1) 	= i0
 
@@ -822,7 +822,7 @@ FUNCTION p_TFRun_findbr_bymerit, settings, settings_corr, tree, complete_tree, t
 		IF snap EQ -1L THEN CONTINUE
 
 		;;----- READ GAL AT THIS SNAPSHOT
-		gal	= f_rdgal2(snap, -1L, column_list=['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
+		gal	= f_rdgal(snap, -1L, column_list=['ID', 'Mass_tot', 'Xc', 'Yc', 'Zc'], $
 			dir=settings.dir_catalog, $
 			horg=settings.horg)
 
@@ -1117,7 +1117,7 @@ PRO P_TFRun_corr_sanitycheck, settings, tree, n0, id0
 			SIN(ang)*evol(cut-2L+i).r_halfmass + evol(cut-2L+i).yc, $
 		       linestyle=2, color='red', thick=2
 
-	        gal0	= f_rdgal2(evol(cut-2L+i).snapnum, -1L, column_list=settings.column_list, $
+	        gal0	= f_rdgal(evol(cut-2L+i).snapnum, -1L, column_list=settings.column_list, $
 			dir=settings.dir_catalog, horg=settings.horg)
 		ind	= js_bound(gal0.xc, gal0.yc, gal0.zc, $
 			xr=xr(*,i), yr=yr(*,i), zr=zr(*,i))
@@ -1160,10 +1160,10 @@ PRO p_TFRun_corr, settings, complete_tree, tree_key
 
 	remove_ind	= LONARR(N_ELEMENTS(complete_tree))-1L
 	;;----- LOAD GAL & BRANCH
-	gal	= f_rdgal2(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
 		horg=settings.horg)
 
-	;gal	= f_rdgal2quick(snap0, dir=settings.dir_catalog, horg=settings.horg)
+	;gal	= f_rdgalquick(snap0, dir=settings.dir_catalog, horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, tree_key, gal, snap0)
 
 	corr_idlist	= LONARR(N_ELEMENTS(gal))-1L
@@ -1366,7 +1366,7 @@ PRO p_TFRun_save, settings, complete_tree
 	;;-----
 	;; LOAD GAL
 	;;-----
-	gal	= f_rdgal2(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
+	gal	= f_rdgal(snap0, -1L, column_list=settings.column_list, dir=settings.dir_catalog, $
 		horg=settings.horg)
 	bid	= p_TFRun_corr_getbr(complete_tree, gal, snap0)
 
@@ -1597,7 +1597,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;; LAST SNAPSHOT
 		;;-----
 		IF i EQ treeset.N1 OR snap_next EQ -1L THEN BEGIN
-			g_curr	= f_rdgal2(snap_curr, -1L, column_list=['ID', 'npart'],$
+			g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'],$
 				dir=settings.dir_catalog, horg=settings.horg)
 			p_tfrun_lastsnap, settings, complete_tree, n_comp, $
 				tree, evoldum, gind, g_curr, snap_curr
@@ -1619,17 +1619,17 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		treefname	= settings.dir_tree + 'tree.snapshot_' + $
 			STRING(snap_curr,format='(I4.4)') + 'VELOCIraptor.tree'
 		t_curr	= p_tfrun_rdhdf5(treefname, treeset)
-		g_curr	= f_rdgal2(snap_curr, -1L, column_list=['ID', 'npart'], $
+		g_curr	= f_rdgal(snap_curr, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
-		g_next	= f_rdgal2(snap_next, -1L, column_list=['ID', 'npart'], $
+		g_next	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 			dir=settings.dir_catalog, horg=settings.horg)
 
 		IF t_curr.nlink GE 2L THEN BEGIN
 			FOR i2=0L, t_curr.nlink-2L DO BEGIN
 				snap_next	= p_tfrun_findnextsnap(settings, snap_next)
 				IF snap_next EQ -1L THEN CONTINUE
-				g_dum	= f_rdgal2(snap_next, -1L, column_list=['ID', 'npart'], $
+				g_dum	= f_rdgal(snap_next, -1L, column_list=['ID', 'npart'], $
 					dir=settings.dir_catalog, horg=settings.horg)
 				g_next	= [g_next, g_dum]
 			ENDFOR
@@ -1654,7 +1654,7 @@ IF settings.p_tfrun_makebr EQ 1L THEN BEGIN
 		;	FOR i2=0L, t_curr.nlink-2L DO BEGIN
 		;		snap_next	= p_tfrun_findnextsnap(settings,snap_next)
 		;		IF snap_next EQ -1L THEN CONTINUE
-		;		g_next		= f_rdgal2(snap_next, ['ID', 'npart'], id0=-1, $
+		;		g_next		= f_rdgal(snap_next, ['ID', 'npart'], id0=-1, $
 		;			dir=settings.dir_save, horg=settings.horg)
 		;		p_tfrun_match, settings, treelog, tree, complete_tree, n_comp, $
 		;			t_curr, g_curr, g_next, gind, evoldum, snap_curr, snap_next
