@@ -54,13 +54,13 @@
        dmp_mass = darr(1)
 
        CALL OMP_SET_NUM_THREADS(n_thread)
-
+PRINT *, 'A', n_thread, omp_get_num_threads(), larr(4)
        !!-----
        !! GET TREE
        !!-----
        IF(ALLOCATED(orgind)) DEALLOCATE(orgind)
        ALLOCATE(orgind(1:n_dm))
-
+PRINT *, 'B'
        !$OMP PARALLEL DO schedule(static) default(shared)
        DO i=1, n_dm
          orgind(i) = i
@@ -79,6 +79,7 @@
 
        root = js_kdtree_mktree(part, orgind, 128, 0, 0, 3, n_thread)
 
+PRINT *, 'C'
        !time(2) = omp_get_wtime()
        !PRINT *, time(2) - time(1), size(root), larr(3)
        !PRINT *, ' '
@@ -89,6 +90,7 @@
        !$OMP PARALLEL DO default(shared) &
        !$OMP & private(cdata, nid, l)
        DO i=1, n_gal
+PRINT *, 'D - ', i
          !! Initialize
          DO l=1, n_aper
            cdata(l)%c_nall = 0.
